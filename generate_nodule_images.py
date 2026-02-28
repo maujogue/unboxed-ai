@@ -191,11 +191,13 @@ def build_seg_index(
 # Rendering
 # ---------------------------------------------------------------------------
 
-
-def normalize_ct(pixel_data: np.ndarray, wl: int = -600, ww: int = 1500) -> np.ndarray:
-    """Lung windowing + normalize to [0, 1]."""
+def normalize_ct(ct_dcm: pydicom.Dataset, wl: int = -600, ww: int = 1500) -> np.ndarray:
+    """Convert to Hounsfield Units then apply lung windowing + normalize to [0, 1]."""
+    slope = float(getattr(ct_dcm, "RescaleSlope", 1))
+    intercept = float(getattr(ct_dcm, "RescaleIntercept", 0))
+    hu = ct_dcm.pixel_array.astype(np.float32) * slope + intercept
     low, high = wl - ww // 2, wl + ww // 2
-    clipped = np.clip(pixel_data.astype(np.float32), low, high)
+    clipped = np.clip(hu, low, high)
     return (clipped - low) / (high - low)
 
 
@@ -208,7 +210,9 @@ def save_overlay(
     fig, ax = plt.subplots(figsize=(6, 6))
     ax.imshow(ct_norm, cmap="gray")
     if seg_mask is not None and seg_mask.any():
-        ax.imshow(np.ma.masked_where(seg_mask == 0, seg_mask), cmap="Reds", alpha=0.5)
+        red = np.zeros((*seg_mask.shape, 4), dtype=np.float32)
+        red[seg_mask > 0] = [1.0, 0.0, 0.0, 0.5]
+        ax.imshow(red)
     if title:
         ax.set_title(title, fontsize=9, pad=4)
     ax.axis("off")
@@ -297,7 +301,7 @@ def process_entry(
 
         # Download CT slice and render
         ct_dcm = download_ct_slice(ct_orthanc_id)
-        ct_norm = normalize_ct(ct_dcm.pixel_array)
+        ct_norm = normalize_ct(ct_dcm)
         seg_mask = pixel_array[frame_idx] if frame_idx is not None else None
 
         safe_diam = diameter.replace(" ", "").replace("/", "-")
