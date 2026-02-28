@@ -5,9 +5,7 @@ from typing import Any
 
 import requests
 
-DEFAULT_ORTHANC_URL = "https://orthanc.unboxed-2026.ovh"
-DEFAULT_ORTHANC_AUTH = ("unboxed", "unboxed2026")
-DEFAULT_WORK_PATH = "/home/jovyan/work"
+from .Constants import Constants
 
 
 class OrthancClient:
@@ -15,10 +13,10 @@ class OrthancClient:
 
     def __init__(
         self,
-        base_url: str = DEFAULT_ORTHANC_URL,
-        username: str = DEFAULT_ORTHANC_AUTH[0],
-        password: str = DEFAULT_ORTHANC_AUTH[1],
-        timeout: int = 5,
+        base_url: str = Constants.DEFAULT_ORTHANC_URL,
+        username: str = Constants.DEFAULT_ORTHANC_USERNAME,
+        password: str = Constants.DEFAULT_ORTHANC_PASSWORD,
+        timeout: int = Constants.DEFAULT_TIMEOUT_SECONDS,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.auth = (username, password)
@@ -28,7 +26,7 @@ class OrthancClient:
         """Upload one DICOM file and return Orthanc instance ID."""
         with open(path, "rb") as stream:
             response = requests.post(
-                f"{self.base_url}/instances",
+                Constants.ORTHANC_INSTANCES_ENDPOINT,
                 auth=self.auth,
                 data=stream.read(),
                 headers={"Content-Type": "application/dicom"},
@@ -41,7 +39,7 @@ class OrthancClient:
     def list_studies(self, limit: int | None = 10) -> list[dict[str, Any]]:
         """List studies and extract key tags."""
         studies_response = requests.get(
-            f"{self.base_url}/studies",
+            Constants.ORTHANC_STUDIES_ENDPOINT,
             auth=self.auth,
             timeout=self.timeout,
         )
@@ -52,7 +50,7 @@ class OrthancClient:
         rows: list[dict[str, Any]] = []
         for study_id in subset:
             detail_response = requests.get(
-                f"{self.base_url}/studies/{study_id}",
+                Constants.ORTHANC_STUDY_DETAIL_ENDPOINT.format(study_id=study_id),
                 auth=self.auth,
                 timeout=self.timeout,
             )
@@ -91,16 +89,18 @@ class OrthancClient:
             "failed_files": failed,
         }
 
-    def download_study(self, study_id: str, out_dir: str = DEFAULT_WORK_PATH) -> str:
+    def download_study(
+        self, study_id: str, out_dir: str = Constants.DEFAULT_WORK_PATH
+    ) -> str:
         """Download one Orthanc study archive to a zip file."""
         destination = Path(out_dir)
         destination.mkdir(parents=True, exist_ok=True)
         target_file = destination / f"study_{study_id[:8]}.zip"
         with requests.get(
-            f"{self.base_url}/studies/{study_id}/archive",
+            Constants.ORTHANC_STUDY_ARCHIVE_ENDPOINT.format(study_id=study_id),
             auth=self.auth,
             stream=True,
-            timeout=120,
+            timeout=Constants.DOWNLOAD_TIMEOUT_SECONDS,
         ) as response:
             response.raise_for_status()
             with open(target_file, "wb") as stream:
