@@ -278,7 +278,6 @@ def generate_report_on_lungs_only(
         print(f"Response saved to {output_file}")
     return response
 
-<<<<<<< HEAD
 import json
 def generate_final_report(df: pd.DataFrame, segmentation_algo_res_path: str, patient_id: str, use_judge: bool = True, output_file: str = None):
     # Filtrer les visites du patient
@@ -312,8 +311,6 @@ def generate_final_report(df: pd.DataFrame, segmentation_algo_res_path: str, pat
         print(f"Response sauvegardée dans {output_file}")
 
     return response
-=======
->>>>>>> 44eac4e4e3b13d1c540e0662a4f0a00a17613386
 
 if __name__ == "__main__":
     df = excel_to_df(Constants.REPORTS_PATH)
@@ -321,13 +318,7 @@ if __name__ == "__main__":
     merged = merge_on_accession(df, orth_df)
 
     def chat_fn(message, history):
-<<<<<<< HEAD
         rapport = generate_final_report(merged, Constants.SEGMENTATION_PATH, message, output_file="history_report.txt")
-=======
-        rapport = generate_report_on_lungs_only(
-            merged, message, output_file="history_report.txt"
-        )
->>>>>>> 44eac4e4e3b13d1c540e0662a4f0a00a17613386
         return rapport
 
     import gradio as gr
