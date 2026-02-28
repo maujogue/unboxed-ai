@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+
 def show_dicom(path: str, show_plot: bool = True) -> dict[str, Any]:
     """
     Load and normalize a DICOM image and optionally render it with matplotlib.

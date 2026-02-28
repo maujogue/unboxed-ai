@@ -19,5 +19,6 @@ def test_orthanc_client_exposes_notebook_methods() -> None:
             f"modality={study.get('modality', '-')}"
         )
 
+
 if __name__ == "__main__":
     test_orthanc_client_exposes_notebook_methods()

@@ -25,6 +25,7 @@ dependencies = [
     "pandas",
     "matplotlib",
     "plotly",
+    "dotenv>=0.9.9",
 ]
 
 [project.scripts]

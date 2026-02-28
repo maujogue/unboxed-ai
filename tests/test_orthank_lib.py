@@ -45,7 +45,9 @@ class TestOrthancClient(unittest.TestCase):
         self.assertEqual(rows[0]["modality"], "CT")
 
     @patch("unboxed_ai.lib.OrthancClient.requests.post")
-    def test_upload_dicom_returns_instance_id_when_successful(self, mock_post: Mock) -> None:
+    def test_upload_dicom_returns_instance_id_when_successful(
+        self, mock_post: Mock
+    ) -> None:
         response = Mock(status_code=200)
         response.json.return_value = {"ID": "instance-1"}
         mock_post.return_value = response
@@ -126,4 +128,3 @@ class TestShowDicom(unittest.TestCase):
         self.assertEqual(result["shape"], (2, 2))
         self.assertEqual(result["patient_id"], "PAT-1")
         self.assertEqual(result["modality"], "CT")
-
