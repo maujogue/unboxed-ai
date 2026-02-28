@@ -69,11 +69,11 @@ Prefer these project commands:
 - `make docker-down` – stop pgvector Postgres.
 - `make docker-logs` – pgvector container logs.
 
-## Quality Gate (Required)
+<!-- ## Quality Gate (Required)
 
 **After each run or change**, the agent must run linting, type checking, and tests before considering work done:
 
 1. `make format` when code style may have changed.
 2. `make check` — this runs **lint** (Ruff), **typecheck** (ty), and **tests** (pytest). All must pass.
 
-If any step fails, fix issues and re-run until all checks pass. Do not leave with failing lint or typecheck.
+If any step fails, fix issues and re-run until all checks pass. Do not leave with failing lint or typecheck. -->

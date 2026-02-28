@@ -141,6 +141,7 @@ Return a structured summary in clear language. Include:
 - Referenced images per visit
 - Diagnosis/response trends as appropriate."""
 
+
 def build_final_report_prompt(
     patient_id: str,
     visits_text: str,
@@ -156,7 +157,7 @@ For each visit, you are given :
 2 - The result of the reading by a radiologist
 
 For some of these visits, there are no report about the results of the CT scanner.
-Your goal is to write the missing reports based on the findings of a segmentation algorithm that detected nodules based on CT scanner images.
+    Your goal is to write the missing reports based on the findings of a segmentation algorithm that detected nodules based on CT scanner images.
 
 INSTRUCTIONS : 
 - Focus ONLY on lung findings, their evolution, and reference any relevant images.
@@ -169,6 +170,7 @@ PatientID: {patient_id}
 Patient history reports:
 
 {visits_text}"""
+
 
 def generate_response(prompt: str) -> str:
     """
@@ -278,27 +280,37 @@ def generate_report_on_lungs_only(
         print(f"Response saved to {output_file}")
     return response
 
+
 import json
-def generate_final_report(df: pd.DataFrame, segmentation_algo_res_path: str, patient_id: str, use_judge: bool = True, output_file: str = None):
+
+
+def generate_final_report(
+    df: pd.DataFrame,
+    segmentation_algo_res_path: str,
+    patient_id: str,
+    use_judge: bool = True,
+    output_file: str = None,
+):
     # Filtrer les visites du patient
     patient_visits = df[df["PatientID_excel"] == patient_id].sort_values(by="StudyDate")
     with open(segmentation_algo_res_path, "r", encoding="utf-8") as f:
         segmentation_res = json.load(f)
-        
-    
+
     # Construire le texte à inclure dans le prompt
     visits_text = ""
     for _, row in patient_visits.iterrows():
         visits_text += f"Date: {row['StudyDate']} (format : YYYYMMDD)\n"
         visits_text += f"Clinical information: {row['Clinical information data (Pseudo reports)']}\n"
-        for entry in segmentation_res :
-            if entry["accession_number"] == row["AccessionNumber"] :
-                 visits_text += f"Segmentation results: {entry}\n\n"
-    
+        for entry in segmentation_res:
+            if entry["accession_number"] == row["AccessionNumber"]:
+                visits_text += f"Segmentation results: {entry}\n\n"
+
     if use_judge:
         choice = judge_report_structure(patient_id, visits_text)
         print(f"  Judge: {choice.report_structure} — {choice.reasoning}")
-        prompt = build_final_report_prompt(patient_id, visits_text, choice.report_structure)
+        prompt = build_final_report_prompt(
+            patient_id, visits_text, choice.report_structure
+        )
     else:
         # Legacy single prompt (no routing)
         prompt = build_final_report_prompt(patient_id, visits_text, "lungrad")
@@ -312,13 +324,19 @@ def generate_final_report(df: pd.DataFrame, segmentation_algo_res_path: str, pat
 
     return response
 
+
 if __name__ == "__main__":
     df = excel_to_df(Constants.REPORTS_PATH)
     orth_df = fetch_studies_from_orthanc()
     merged = merge_on_accession(df, orth_df)
 
     def chat_fn(message, history):
-        rapport = generate_final_report(merged, Constants.SEGMENTATION_PATH, message, output_file="history_report.txt")
+        rapport = generate_final_report(
+            merged,
+            Constants.SEGMENTATION_PATH,
+            message,
+            output_file="history_report.txt",
+        )
         return rapport
 
     import gradio as gr

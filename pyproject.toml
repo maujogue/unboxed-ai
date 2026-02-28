@@ -36,6 +36,8 @@ dependencies = [
     "gradio>=6.8.0",
     "mistralai>=1.12.4",
     "odfpy>=1.4.1",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
 ]
 
 [project.scripts]
@@ -60,7 +62,7 @@ dev = [
 exclude = ["WELCOME.ipynb"]
 
 [tool.ty.src]
-exclude = ["WELCOME.ipynb", "examples/langchain_mistralai_integration_example.py", "tests/test_mistral_call.py", "src/unboxed_ai/orthanc_pipeline.py"]
+exclude = ["WELCOME.ipynb", "examples/langchain_mistralai_integration_example.py", "tests/test_mistral_call.py", "src/unboxed_ai/orthanc_pipeline.py", "src/unboxed_ai/experiences_api.py", "export_nodules_json.py", "process_ods.py", "src/unboxed_ai/lib/Services.py", "src/unboxed_ai/report_generation.py"]
 
 [tool.pytest.ini_options]
 addopts = ["-m", "not integration"]

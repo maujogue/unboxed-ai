@@ -130,7 +130,7 @@ def main() -> None:
 
         thorax_only = scan_is_thorax_only(study_desc)
         scan_type = "thorax-seul" if thorax_only else "TAP/multi-région"
-         
+
         nodules, z_ct_max = extract_nodules(Path(seg_path), info_text)
 
         z_thoracic_min = (

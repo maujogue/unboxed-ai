@@ -31,6 +31,7 @@ class TestOrthancClient(unittest.TestCase):
         detail_response.json.return_value = {
             "MainDicomTags": {
                 "PatientID": "P1",
+                "AccessionNumber": "ACC123",
                 "StudyDescription": "CT",
                 "StudyDate": "20260101",
                 "ModalitiesInStudy": "CT",
@@ -42,6 +43,7 @@ class TestOrthancClient(unittest.TestCase):
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["id"], "study-a")
         self.assertEqual(rows[0]["patient"], "P1")
+        self.assertEqual(rows[0]["accession"], "ACC123")
         self.assertEqual(rows[0]["modality"], "CT")
 
     @patch("unboxed_ai.lib.OrthancClient.requests.post")

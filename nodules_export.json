@@ -2,7 +2,7 @@
   {
     "patient_id": "ADSTJO5",
     "accession_number": "2595935574001850",
-    "seg_file": "/home/corentin/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-4054717951336983.dcm",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-4054717951336983.dcm",
     "ct_series_uid": "1.2.826.0.1.3680043.10.436.2857950474704638826484054717951336983",
     "study_description": "",
     "scan_type": "TAP/multi-région",
@@ -14,7 +14,7 @@
   {
     "patient_id": "136F50A1",
     "accession_number": "10492106",
-    "seg_file": "/home/corentin/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-2561255906362652.dcm",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-2561255906362652.dcm",
     "ct_series_uid": "1.2.840.113654.2.70.1.321660327753674499840912561255906362652",
     "study_description": "TC TÒRAX, TC ABDOMEN, TC PELVIS",
     "scan_type": "TAP/multi-région",
@@ -57,7 +57,7 @@
   {
     "patient_id": "0301B7D6",
     "accession_number": "11297707",
-    "seg_file": "/home/corentin/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-0676620742772698.dcm",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-0676620742772698.dcm",
     "ct_series_uid": "1.2.840.113654.2.70.1.305312581172502543406090676620742772698",
     "study_description": "TC TÒRAX, TC ABDOMEN, TC PELVIS",
     "scan_type": "TAP/multi-région",
@@ -110,7 +110,7 @@
   {
     "patient_id": "0301B7D6",
     "accession_number": "11092835",
-    "seg_file": "/home/corentin/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-5601903016757313.dcm",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-5601903016757313.dcm",
     "ct_series_uid": "1.2.840.113654.2.70.1.283289855609203991111775601903016757313",
     "study_description": "TC TÒRAX, TC ABDOMEN, TC PELVIS",
     "scan_type": "TAP/multi-région",
@@ -133,7 +133,7 @@
   {
     "patient_id": "0301B7D6",
     "accession_number": "31981427",
-    "seg_file": "/home/corentin/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-1677733927030393.dcm",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-1677733927030393.dcm",
     "ct_series_uid": "1.2.840.113654.2.70.1.75701254400969968234161677733927030393",
     "study_description": "TC TÒRAX, TC ABDOMEN, TC PELVIS",
     "scan_type": "TAP/multi-région",
@@ -156,7 +156,7 @@
   {
     "patient_id": "0301B7D6",
     "accession_number": "57329381",
-    "seg_file": "/home/corentin/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-1730260722258634.dcm",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-1730260722258634.dcm",
     "ct_series_uid": "1.2.840.113654.2.70.1.125818391062017004129811730260722258634",
     "study_description": "TC TÒRAX, TC ABDOMEN, TC PELVIS",
     "scan_type": "TAP/multi-région",
@@ -179,7 +179,7 @@
   {
     "patient_id": "0301B7D6",
     "accession_number": "92106962",
-    "seg_file": "/home/corentin/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-0786319952094534.dcm",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-0786319952094534.dcm",
     "ct_series_uid": "1.2.840.113654.2.70.1.258066848945691652957550786319952094534",
     "study_description": "TC TÓRAX, TC ABDOMEN, TC PELVIS",
     "scan_type": "TAP/multi-région",
@@ -202,7 +202,7 @@
   {
     "patient_id": "063F6BB9",
     "accession_number": "10969511",
-    "seg_file": "/home/corentin/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-3781342436872898.dcm",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-3781342436872898.dcm",
     "ct_series_uid": "1.2.840.113654.2.70.1.306389454009802957008553781342436872898",
     "study_description": "TC TÒRAX, TC ABDOMEN",
     "scan_type": "TAP/multi-région",
@@ -255,7 +255,7 @@
   {
     "patient_id": "063F6BB9",
     "accession_number": "12995507",
-    "seg_file": "/home/corentin/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-9220384170830375.dcm",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-9220384170830375.dcm",
     "ct_series_uid": "1.2.840.113654.2.70.1.212847667843679898247899220384170830375",
     "study_description": "TC TÓRAX, TC ABDOMEN",
     "scan_type": "TAP/multi-région",
@@ -308,7 +308,7 @@
   {
     "patient_id": "063F6BB9",
     "accession_number": "18755655",
-    "seg_file": "/home/corentin/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-1505582503932446.dcm",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-1505582503932446.dcm",
     "ct_series_uid": "1.2.840.113654.2.70.1.290914229621286211272071505582503932446",
     "study_description": "TC TÒRAX, TC ABDOMEN",
     "scan_type": "TAP/multi-région",
@@ -361,7 +361,7 @@
   {
     "patient_id": "136F50A1",
     "accession_number": "17790114",
-    "seg_file": "/home/corentin/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-1819844812817877.dcm",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-1819844812817877.dcm",
     "ct_series_uid": "1.2.840.113654.2.70.1.31006181992830300895091819844812817877",
     "study_description": "TC TÓRAX, TC ABDOMEN, TC PELVIS",
     "scan_type": "TAP/multi-région",
@@ -404,7 +404,7 @@
   {
     "patient_id": "136F50A1",
     "accession_number": "20890776",
-    "seg_file": "/home/corentin/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-4390049428688846.dcm",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-4390049428688846.dcm",
     "ct_series_uid": "1.2.840.113654.2.70.1.9044936456259782559544390049428688846",
     "study_description": "TC TÓRAX, TC ABDOMEN, TC PELVIS",
     "scan_type": "TAP/multi-région",
@@ -447,7 +447,7 @@
   {
     "patient_id": "136F50A1",
     "accession_number": "29905155",
-    "seg_file": "/home/corentin/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-9982823151471062.dcm",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-9982823151471062.dcm",
     "ct_series_uid": "1.2.840.113654.2.70.1.279595635682222603581829982823151471062",
     "study_description": "TC TÓRAX, TC ABDOMEN, TC PELVIS",
     "scan_type": "TAP/multi-région",
@@ -490,7 +490,7 @@
   {
     "patient_id": "136F50A1",
     "accession_number": "45070113",
-    "seg_file": "/home/corentin/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-0591449006004794.dcm",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-0591449006004794.dcm",
     "ct_series_uid": "1.2.840.113654.2.70.1.179237530511682803625080591449006004794",
     "study_description": "TC TÒRAX, TC ABDOMEN, TC PELVIS",
     "scan_type": "TAP/multi-région",
@@ -543,7 +543,7 @@
   {
     "patient_id": "136F50A1",
     "accession_number": "97256989",
-    "seg_file": "/home/corentin/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-7414569008583984.dcm",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-7414569008583984.dcm",
     "ct_series_uid": "1.2.840.113654.2.70.1.25096435682011979396437414569008583984",
     "study_description": "TC TÒRAX, TC ABDOMEN, TC PELVIS",
     "scan_type": "TAP/multi-région",
@@ -586,7 +586,7 @@
   {
     "patient_id": "17A76C2A",
     "accession_number": "26721665",
-    "seg_file": "/home/corentin/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-6442385337654814.dcm",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-6442385337654814.dcm",
     "ct_series_uid": "1.2.840.113654.2.70.1.251872505507105532891396442385337654814",
     "study_description": "TC TÒRAX",
     "scan_type": "thorax-seul",
@@ -629,7 +629,7 @@
   {
     "patient_id": "17A76C2A",
     "accession_number": "98426752",
-    "seg_file": "/home/corentin/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-1170962054851383.dcm",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-1170962054851383.dcm",
     "ct_series_uid": "1.2.840.113654.2.70.1.146588603417193456228411170962054851383",
     "study_description": "TC TÒRAX",
     "scan_type": "thorax-seul",

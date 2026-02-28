@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Experiences · Unboxed AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --accent-dim: #388bfd33;
+      --success: #3fb950;
+      --warning: #d29922;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "DM Sans", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.5rem;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+    .loading, .error {
+      padding: 1.5rem;
+      border-radius: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    .error { border-left: 4px solid #f85149; }
+    .experience {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .experience-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem 1.5rem;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .experience-header:hover { background: rgba(255,255,255,0.03); }
+    .experience-id {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .experience-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+    .experience-meta span { display: inline-flex; align-items: center; gap: 0.25rem; }
+    .badge {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      background: var(--accent-dim);
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .reports-count {
+      margin-left: auto;
+      font-weight: 500;
+      color: var(--accent);
+    }
+    .reports-count.none { color: var(--text-muted); }
+    .experience-body {
+      border-top: 1px solid var(--border);
+      padding: 0 1.25rem 1rem;
+    }
+    .report {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--bg);
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .report:first-child { margin-top: 1rem; }
+    .report-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+    .report-type { font-weight: 500; color: var(--text); }
+    .report-validated {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+    }
+    .report-validated.yes { background: rgba(63,185,80,0.2); color: var(--success); }
+    .report-validated.no { background: rgba(210,153,34,0.2); color: var(--warning); }
+    .report-description {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 8em;
+      overflow-y: auto;
+    }
+    .report-description.expanded { max-height: none; }
+    .toggle-desc {
+      font-size: 0.75rem;
+      color: var(--accent);
+      cursor: pointer;
+      margin-top: 0.25rem;
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: inherit;
+    }
+    .toggle-desc:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Experiences</h1>
+    <p class="subtitle">Orthanc studies and linked reports from the database.</p>
+    <div id="root">
+      <div class="loading" id="loading">Loading experiences…</div>
+    </div>
+  </div>
+  <script>
+    const root = document.getElementById("root");
+    const loading = document.getElementById("loading");
+
+    function renderError(message) {
+      root.innerHTML = `<div class="error">${escapeHtml(message)}</div>`;
+    }
+
+    function escapeHtml(s) {
+      const div = document.createElement("div");
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    function formatDate(d) {
+      if (!d || d === "-") return d;
+      const s = String(d);
+      if (s.length === 8) return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;
+      return s;
+    }
+
+    function renderReport(report) {
+      const desc = report.report_description || "";
+      const short = desc.length > 320;
+      const descEl = short ? desc.slice(0, 320) + "…" : desc;
+      const validatedClass = report.is_validated ? "yes" : "no";
+      const validatedLabel = report.is_validated ? "Validated" : "Not validated";
+      let html = `
+        <div class="report" data-report-id="${report.id}">
+          <div class="report-header">
+            <span class="report-type">${escapeHtml(report.type)}</span>
+            <span class="report-validated ${validatedClass}">${validatedLabel}</span>
+          </div>
+          <div class="report-description ${short ? "" : "expanded"}">${escapeHtml(descEl)}</div>
+      `;
+      if (short) {
+        html += `<button type="button" class="toggle-desc" aria-label="Expand description">Show more</button>`;
+      }
+      html += "</div>";
+      return html;
+    }
+
+    function renderExperience(exp, index) {
+      const reports = exp.reports || [];
+      const reportsCount = reports.length;
+      const reportsLabel = reportsCount === 0 ? "No reports" : `${reportsCount} report${reportsCount !== 1 ? "s" : ""}`;
+      let html = `
+        <div class="experience" data-index="${index}">
+          <div class="experience-header" data-toggle="${index}">
+            <div>
+              <div class="experience-id">${escapeHtml(exp.id)}</div>
+              <div>${escapeHtml(exp.description)}</div>
+            </div>
+            <div class="experience-meta">
+              <span>Patient ${escapeHtml(exp.patient)}</span>
+              ${exp.accession ? `<span>Accession ${escapeHtml(exp.accession)}</span>` : ""}
+              <span>${formatDate(exp.date)}</span>
+              <span>${escapeHtml(exp.modality)}</span>
+            </div>
+            <span class="reports-count ${reportsCount === 0 ? "none" : ""}">${reportsLabel}</span>
+          </div>
+          <div class="experience-body" id="body-${index}" hidden>
+      `;
+      reports.forEach((r) => {
+        html += renderReport(r);
+      });
+      html += "</div></div>";
+      return html;
+    }
+
+    function bindToggles() {
+      root.querySelectorAll(".experience-header[data-toggle]").forEach((header) => {
+        const index = header.getAttribute("data-toggle");
+        const body = document.getElementById(`body-${index}`);
+        if (!body) return;
+        header.addEventListener("click", () => {
+          const hidden = body.hidden;
+          body.hidden = !hidden;
+        });
+      });
+      root.querySelectorAll(".experience").forEach((expEl) => {
+        const body = expEl.querySelector(".experience-body");
+        const reports = expEl.querySelectorAll(".report");
+        reports.forEach((reportEl) => {
+          const btn = reportEl.querySelector(".toggle-desc");
+          const descEl = reportEl.querySelector(".report-description");
+          if (btn && descEl && reportEl.dataset.fullDesc) {
+            btn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              const fullDesc = reportEl.dataset.fullDesc;
+              if (descEl.classList.contains("expanded")) {
+                descEl.textContent = fullDesc.length > 320 ? fullDesc.slice(0, 320) + "…" : fullDesc;
+                descEl.classList.remove("expanded");
+                btn.textContent = "Show more";
+              } else {
+                descEl.textContent = fullDesc;
+                descEl.classList.add("expanded");
+                btn.textContent = "Show less";
+              }
+            });
+          }
+        });
+      });
+    }
+
+    async function load() {
+      try {
+        const base = window.location.origin;
+        const res = await fetch(`${base}/api/experiences`);
+        if (!res.ok) throw new Error(res.statusText || `HTTP ${res.status}`);
+        const data = await res.json();
+        loading.remove();
+        if (!Array.isArray(data)) throw new Error("Invalid response");
+        root.innerHTML = data.map((exp, i) => renderExperience(exp, i)).join("");
+        root.querySelectorAll(".report").forEach((reportEl) => {
+          const report = data.flatMap((e) => e.reports || []).find((r) => String(r.id) === reportEl.dataset.reportId);
+          if (report && report.report_description && report.report_description.length > 320) {
+            reportEl.dataset.fullDesc = report.report_description;
+          }
+        });
+        bindToggles();
+      } catch (err) {
+        loading.remove();
+        renderError("Failed to load experiences: " + (err.message || String(err)));
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>

@@ -191,6 +191,7 @@ def build_seg_index(
 # Rendering
 # ---------------------------------------------------------------------------
 
+
 def normalize_ct(ct_dcm: pydicom.Dataset, wl: int = -600, ww: int = 1500) -> np.ndarray:
     """Convert to Hounsfield Units then apply lung windowing + normalize to [0, 1]."""
     slope = float(getattr(ct_dcm, "RescaleSlope", 1))
@@ -258,7 +259,7 @@ def process_entry(
     seg_frame_by_key, areas_by_seg, pixel_array = build_seg_index(seg_dcm)
 
     # Build CT index
-    print(f"  Indexing CT instances...")
+    print("  Indexing CT instances...")
     uid_to_orthanc, instnum_to_uid = build_ct_index(ct_series_id)
     print(f"  CT index: {len(uid_to_orthanc)} instances")
 

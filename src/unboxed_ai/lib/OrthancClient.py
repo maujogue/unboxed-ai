@@ -36,6 +36,23 @@ class OrthancClient:
             return response.json().get("ID")
         return None
 
+    def _fetch_patient_id(self, patient_orthanc_id: str | None) -> str | None:
+        """Fetch PatientID from parent patient when not in study response."""
+        if not patient_orthanc_id:
+            return None
+        url = f"{self.base_url}/patients/{patient_orthanc_id}"
+        try:
+            response = requests.get(
+                url,
+                auth=self.auth,
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+            info = response.json()
+            return info.get("MainDicomTags", {}).get("PatientID")
+        except Exception:
+            return None
+
     def list_studies(self, limit: int | None = 10) -> list[dict[str, Any]]:
         """List studies and extract key tags."""
         studies_response = requests.get(
@@ -57,10 +74,21 @@ class OrthancClient:
             detail_response.raise_for_status()
             info = detail_response.json()
             tags = info.get("MainDicomTags", {})
+            patient_tags = info.get("PatientMainDicomTags", {})
+            patient_id = (
+                patient_tags.get("PatientID")
+                or tags.get("PatientID")
+                or self._fetch_patient_id(info.get("ParentPatient"))
+            )
+            patient_name = (
+                patient_tags.get("PatientName") or tags.get("PatientName") or ""
+            )
             rows.append(
                 {
                     "id": study_id,
-                    "patient": tags.get("PatientID", "-"),
+                    "patient": patient_id or "-",
+                    "patient_name": patient_name,
+                    "accession": tags.get("AccessionNumber", ""),
                     "description": tags.get("StudyDescription", "-"),
                     "date": tags.get("StudyDate", "-"),
                     "modality": tags.get("ModalitiesInStudy", "-"),

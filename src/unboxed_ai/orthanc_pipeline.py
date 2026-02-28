@@ -15,7 +15,6 @@ from __future__ import annotations
 import argparse
 import logging
 import shutil
-import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -106,7 +105,9 @@ class Nodule:
     z_max: float
 
 
-def extract_nodules(seg_path: Path, info_text: str | None) -> tuple[list[Nodule], float]:
+def extract_nodules(
+    seg_path: Path, info_text: str | None
+) -> tuple[list[Nodule], float]:
     """Parse a DICOM SEG file and return centroid + diameter for each nodule."""
     ds = pydicom.dcmread(str(seg_path))
 
@@ -208,7 +209,7 @@ def generate_markdown(results: list[SeriesResult], date: str) -> str:
 
     for r in results:
         lines += [
-            f"---",
+            "---",
             f"## Patient `{r.patient_id}` — {r.study_description}",
             f"**Accession :** {r.accession_number}  ",
             f"**Série :** {r.series_description}  ",
@@ -242,7 +243,6 @@ def markdown_to_html(md: str, title: str = "Rapport nodules") -> str:
 
     html_lines = []
     in_table = False
-    in_list = False
 
     for line in md.splitlines():
         # Headings

@@ -1,4 +1,4 @@
-.PHONY: help install sync test pytest unittest orthank-test lint format typecheck check clean docker-up docker-down docker-logs pipeline
+.PHONY: help install sync test pytest unittest orthank-test lint format typecheck check clean docker-up docker-down docker-logs pipeline run-frontend frontend-build
 
 help: ## Show available commands
 	@echo "Common commands:"
@@ -13,6 +13,8 @@ help: ## Show available commands
 	@echo "  make docker-down  - Stop pgvector Postgres"
 	@echo "  make docker-logs  - Show pgvector container logs"
 	@echo "  make pipeline     - Run SEG extraction pipeline + generate HTML report"
+	@echo "  make run-frontend  - Run experiences frontend (Orthanc + reports) on port 8000"
+	@echo "  make frontend-build - Build React frontend for production"
 
 install: ## Install and sync project dependencies
 	uv sync --dev
@@ -47,3 +49,9 @@ docker-logs: ## Show pgvector container logs
 
 pipeline: ## Extract SEG from bundled registry, upload to Orthanc, generate HTML report
 	uv run orthanc-pipeline --output results/ --report results/rapport.html
+
+run-frontend: ## Run experiences frontend (Orthanc studies + reports)
+	uv run uvicorn unboxed_ai.experiences_api:app --reload --host 0.0.0.0 --port 8000
+
+frontend-build: ## Build React frontend for production
+	cd frontend && npm install && npm run build
