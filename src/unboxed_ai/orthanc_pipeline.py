@@ -96,16 +96,10 @@ class Nodule:
     z: float
     z_min: float
     z_max: float
-    referenced_sop_instance_uids: list[str] = field(default_factory=list)
 
 
-def extract_nodules(seg_path: Path, info_text: str | None) -> tuple[list[Nodule], float]:
-    """Parse a DICOM SEG file and return (nodules, z_ct_max).
-
-    z_ct_max is the maximum Z coordinate across all SEG frames, corresponding
-    to the most superior (cranial) slice of the referenced CT series.
-    It can be used to compute a thoracic Z threshold: z >= z_ct_max - depth_mm.
-    """
+def extract_nodules(seg_path: Path, info_text: str | None) -> list[Nodule]:
+    """Parse a DICOM SEG file and return centroid + diameter for each nodule."""
     ds = pydicom.dcmread(str(seg_path))
 
     # Parse diameters from info text
@@ -120,31 +114,18 @@ def extract_nodules(seg_path: Path, info_text: str | None) -> tuple[list[Nodule]
                     diameters[num] = parts[1].strip()
 
     if not hasattr(ds, "PerFrameFunctionalGroupsSequence"):
-        return [], float("nan")
+        return []
 
     frames = ds.PerFrameFunctionalGroupsSequence
     pixel_array = ds.pixel_array
 
     seg_data: dict[int, list[np.ndarray]] = {}
     seg_z: dict[int, list[float]] = {}
-    seg_refs: dict[int, list[str]] = {}  # segment → referenced CT SOPInstanceUIDs
-    all_z: list[float] = []
 
     for i, frame in enumerate(frames):
         seg_num = int(frame.SegmentIdentificationSequence[0].ReferencedSegmentNumber)
         pos = [float(v) for v in frame.PlanePositionSequence[0].ImagePositionPatient]
-        z = pos[2]
-        all_z.append(z)
         mask = pixel_array[i]
-
-        # Collect referenced CT SOPInstanceUID for this frame
-        ref_uid: str | None = None
-        if hasattr(frame, "DerivationImageSequence"):
-            try:
-                src = frame.DerivationImageSequence[0].SourceImageSequence[0]
-                ref_uid = str(getattr(src, "ReferencedSOPInstanceUID", None))
-            except (IndexError, AttributeError):
-                pass
 
         if not mask.any():
             continue
@@ -160,13 +141,7 @@ def extract_nodules(seg_path: Path, info_text: str | None) -> tuple[list[Nodule]
                       for x, y in zip(xs, ys)]
             seg_data.setdefault(seg_num, []).extend(coords)
 
-        seg_z.setdefault(seg_num, []).append(z)
-        if ref_uid:
-            refs = seg_refs.setdefault(seg_num, [])
-            if ref_uid not in refs:
-                refs.append(ref_uid)
-
-    z_ct_max = max(all_z) if all_z else float("nan")
+        seg_z.setdefault(seg_num, []).append(pos[2])
 
     nodules = []
     for seg_num in sorted(seg_data.keys()):
@@ -181,9 +156,8 @@ def extract_nodules(seg_path: Path, info_text: str | None) -> tuple[list[Nodule]
             z=round(float(centroid[2]), 1),
             z_min=round(min(z_vals), 1),
             z_max=round(max(z_vals), 1),
-            referenced_sop_instance_uids=sorted(seg_refs.get(seg_num, [])),
         ))
-    return nodules, z_ct_max
+    return nodules
 
 
 # ---------------------------------------------------------------------------
@@ -393,7 +367,7 @@ def run_pipeline(output_dir: Path, report_path: Path) -> None:
         logger.info("  SEG uploadé : %s (status: %s)", uploaded_id, status)
 
         # Extraire les nodules depuis le SEG
-        nodules, _ = extract_nodules(seg_path, info_text)
+        nodules = extract_nodules(seg_path, info_text)
 
         results.append(SeriesResult(
             patient_id=patient_id,
