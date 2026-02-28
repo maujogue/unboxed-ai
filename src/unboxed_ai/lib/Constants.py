@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 class Constants:
     """Central place for library-wide constants."""
@@ -19,7 +23,7 @@ class Constants:
     ORTHANC_PASSWORD = os.getenv("ORTHANC_PASSWORD", "unboxed2026")
     MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "")
 
-    REPORTS_PATH = os.getenv("REPORTS_PATH", "assets/reports.xlsx")
+    REPORTS_PATH = os.getenv("REPORTS_PATH", "assets/new-reports.ods")
     # PostgreSQL / pgvector (use PGVECTOR_CONNECTION to override built URL)
     POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
     POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
@@ -42,3 +46,6 @@ class Constants:
     ORTHANC_STUDY_ARCHIVE_ENDPOINT = (
         f"{ORTHANC_URL.rstrip('/')}/studies/{{study_id}}/archive"
     )
+
+
+constants = Constants()
