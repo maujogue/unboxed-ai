@@ -12,6 +12,7 @@ Limits of the judge + routing approach:
 - Audit: log report_structure and reasoning (e.g. in output_file or a sidecar) for traceability.
 """
 
+import json
 import os
 from typing import Literal
 
@@ -281,33 +282,62 @@ def generate_report_on_lungs_only(
     return response
 
 
-import json
-
-
 def generate_final_report(
     df: pd.DataFrame,
     segmentation_algo_res_path: str,
     patient_id: str,
-    report_accession_number: int,
+    report_accession_number: str | int,
     use_judge: bool = True,
     output_file: str = None,
+    validated_accession_numbers: set[str] | None = None,
 ):
-    # Filtrer les visites du patient
+    """
+    Generate a report for the given patient and accession.
+
+    Only accessions at or before the report accession (by StudyDate) are included
+    in the context. For accessions other than report_accession_number, only
+    validated reports are included. The report accession is always included.
+    """
+    report_acc = str(report_accession_number).strip()
+    # When None (e.g. Gradio demo without DB), include all accessions in context
+    use_validation_filter = validated_accession_numbers is not None
+    validated = validated_accession_numbers or set()
+
+    # Patient visits sorted by date (ascending)
     patient_visits = df[df["PatientID_excel"] == patient_id].sort_values(by="StudyDate")
+    if patient_visits.empty:
+        visits_text = ""
+    else:
+        # Study date of the accession we are generating the report for
+        report_row = patient_visits[
+            patient_visits["AccessionNumber"].astype(str).str.strip() == report_acc
+        ]
+        if report_row.empty:
+            report_study_date = patient_visits["StudyDate"].max()
+        else:
+            report_study_date = report_row["StudyDate"].iloc[0]
+        # Only include visits on or before the report accession date
+        patient_visits = patient_visits[
+            patient_visits["StudyDate"].astype(str) <= str(report_study_date)
+        ]
+
     with open(segmentation_algo_res_path, "r", encoding="utf-8") as f:
         segmentation_res = json.load(f)
 
-    # Construire le texte à inclure dans le prompt
     visits_text = ""
     for _, row in patient_visits.iterrows():
         accession_number = row["AccessionNumber"]
-        
-        if validated or report_accession_number == accession_number : 
-            visits_text += f"Date: {row['StudyDate']} (format : YYYYMMDD)\n"
-            visits_text += f"Clinical information: {row['Clinical information data (Pseudo reports)']}\n"
-            for entry in segmentation_res:
-                if entry["accession_number"] == row["AccessionNumber"]:
-                    visits_text += f"Segmentation results: {entry}\n\n"
+        acc_str = str(accession_number).strip() if pd.notna(accession_number) else ""
+        is_report_accession = acc_str == report_acc
+        is_validated_other = acc_str in validated if use_validation_filter else True
+        if not (is_report_accession or is_validated_other):
+            continue
+        visits_text += f"Date: {row['StudyDate']} (format : YYYYMMDD)\n"
+        visits_text += f"Clinical information: {row['Clinical information data (Pseudo reports)']}\n"
+        for entry in segmentation_res:
+            entry_acc = str(entry.get("accession_number", "")).strip()
+            if entry_acc == acc_str:
+                visits_text += f"Segmentation results: {entry}\n\n"
 
     if use_judge:
         choice = judge_report_structure(patient_id, visits_text)
@@ -335,11 +365,22 @@ if __name__ == "__main__":
     merged = merge_on_accession(df, orth_df)
 
     def chat_fn(message, history):
+        patient_id = message
+        patient_visits = merged[merged["PatientID_excel"] == patient_id].sort_values(
+            by="StudyDate"
+        )
+        report_acc = (
+            str(patient_visits["AccessionNumber"].iloc[-1])
+            if not patient_visits.empty
+            else ""
+        )
         rapport = generate_final_report(
             merged,
             Constants.SEGMENTATION_PATH,
-            message,
+            patient_id,
+            report_accession_number=report_acc,
             output_file="history_report.txt",
+            validated_accession_numbers=None,  # demo: no DB, include all as context
         )
         return rapport
 

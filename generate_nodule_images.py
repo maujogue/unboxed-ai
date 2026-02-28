@@ -11,6 +11,7 @@ Stratégie de sélection de la coupe :
 Usage:
     uv run python generate_nodule_images.py
     uv run python generate_nodule_images.py --output export_nodules/
+    uv run python generate_nodule_images.py --accession 26721665  # only this accession
 """
 
 from __future__ import annotations
@@ -244,7 +245,9 @@ def process_entry(
     # Patient ID from SEG file (fastest: no extra Orthanc call)
     ds_header = pydicom.dcmread(str(seg_path), stop_before_pixels=True)
     patient_id = str(getattr(ds_header, "PatientID", ct_series_uid[-8:]))
-    accession_number = str(getattr(ds_header, "AccessionNumber", "NOACC")).strip() or "NOACC"
+    accession_number = (
+        str(getattr(ds_header, "AccessionNumber", "NOACC")).strip() or "NOACC"
+    )
 
     print(f"  Patient {patient_id} | CT series: {ct_series_id[:8]}")
 
@@ -307,7 +310,11 @@ def process_entry(
         seg_mask = pixel_array[frame_idx] if frame_idx is not None else None
 
         safe_diam = diameter.replace(" ", "").replace("/", "-")
-        out_path = output_dir / patient_id / f"{accession_number}_finding{seg_num}_{safe_diam}.png"
+        out_path = (
+            output_dir
+            / patient_id
+            / f"{accession_number}_finding{seg_num}_{safe_diam}.png"
+        )
         title = f"Patient {patient_id} | Acc {accession_number} | Finding {seg_num} | Ø {diameter}"
         save_overlay(ct_norm, seg_mask, out_path, title=title)
 
@@ -326,9 +333,17 @@ def main() -> None:
         default="export_nodules",
         help="Dossier de sortie (défaut: export_nodules/)",
     )
+    parser.add_argument(
+        "--accession",
+        type=str,
+        default=None,
+        metavar="ACC",
+        help="Process only this accession number (skip others).",
+    )
     args = parser.parse_args()
 
     output_dir = Path(args.output)
+    accession_filter = (args.accession or "").strip() or None
 
     try:
         _get("/system")
@@ -339,6 +354,8 @@ def main() -> None:
 
     entries = seg_registry.list_entries()
     print(f"{len(entries)} SEG(s) in registry\n")
+    if accession_filter:
+        print(f"Filtering by accession: {accession_filter!r}\n")
 
     for ct_series_uid in entries:
         seg_path = seg_registry.lookup(ct_series_uid)
@@ -347,6 +364,12 @@ def main() -> None:
         if seg_path is None:
             print(f"[WARN] SEG not found for UID ...{ct_series_uid[-16:]}")
             continue
+
+        if accession_filter:
+            ds_header = pydicom.dcmread(str(seg_path), stop_before_pixels=True)
+            acc = str(getattr(ds_header, "AccessionNumber", "") or "").strip()
+            if acc != accession_filter:
+                continue
 
         print(f"Processing: ...{ct_series_uid[-16:]}")
         try:

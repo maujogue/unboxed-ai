@@ -105,12 +105,34 @@ function App() {
   const handleGenerateReport = async (experience) => {
     const experienceKey = experience.id
     const patientId = (experience.patient || experience.patient_id || '').trim()
+    const experienceId = (
+      experience.accession ??
+      experience.accession_id ??
+      experience.experience_id ??
+      ""
+    )
+      .toString()
+      .trim()
     if (!patientId) {
       setGenerationByExperience((prev) => ({
         ...prev,
         [experienceKey]: {
           loading: false,
           error: 'Missing patient identifier.',
+          report: '',
+          saveError: '',
+          saveSuccess: false,
+          saveLoading: false,
+        },
+      }))
+      return
+    }
+    if (!experienceId) {
+      setGenerationByExperience((prev) => ({
+        ...prev,
+        [experienceKey]: {
+          loading: false,
+          error: 'Missing accession (experience_id).',
           report: '',
           saveError: '',
           saveSuccess: false,
@@ -136,11 +158,19 @@ function App() {
       const res = await fetch('/api/reports/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ patient_id: patientId }),
+        body: JSON.stringify({ patient_id: patientId, experience_id: experienceId }),
       })
       const data = await res.json()
       if (!res.ok) {
-        const detail = data?.detail || res.statusText || `HTTP ${res.status}`
+        const raw = data?.detail
+        const detail =
+          Array.isArray(raw)
+            ? raw.map((e) => e?.msg ?? JSON.stringify(e)).join("; ")
+            : typeof raw === "string"
+              ? raw
+              : raw != null
+                ? JSON.stringify(raw)
+                : res.statusText || `HTTP ${res.status}`
         throw new Error(detail)
       }
 
@@ -151,6 +181,7 @@ function App() {
           loading: false,
           error: '',
           report: data.report || '',
+          noduleImages: data.nodule_images ?? [],
           saveError: '',
           saveSuccess: false,
         },
@@ -173,7 +204,14 @@ function App() {
   const handleSaveGeneratedReport = async (experience, reportText) => {
     const experienceKey = experience.id
     const patientId = (experience.patient || experience.patient_id || '').trim()
-    const experienceId = (experience.accession || '').trim()
+    const experienceId = (
+      experience.accession ??
+      experience.accession_id ??
+      experience.experience_id ??
+      ""
+    )
+      .toString()
+      .trim()
     const reportDescription = (reportText || '').trim()
 
     if (!patientId || !experienceId || !reportDescription) {

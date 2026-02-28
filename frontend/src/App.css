@@ -240,6 +240,67 @@ h1 {
   resize: vertical;
 }
 
+.generated-report-block {
+  margin-top: 0.75rem;
+}
+
+.generated-report-block .generated-report {
+  margin-top: 0;
+}
+
+.nodule-images-list {
+  margin-top: 1rem;
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+}
+
+.nodule-images-list--loading {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+}
+
+.nodule-images-list-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.nodule-images-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.nodule-images-list-item {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.nodule-images-list-img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: #1a1a1a;
+}
+
+.nodule-images-list-caption {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+  text-align: center;
+  word-break: break-all;
+}
+
 .generation-success {
   margin-top: 0.5rem;
   color: var(--success);

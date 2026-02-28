@@ -25,6 +25,7 @@ class Constants:
 
     REPORTS_PATH = os.getenv("REPORTS_PATH", "assets/new-reports.ods")
     SEGMENTATION_PATH = os.getenv("SEGMENTATION_PATH", "nodules_export.json")
+    NODULE_IMAGES_DIR = os.getenv("NODULE_IMAGES_DIR", "export_nodules")
     # PostgreSQL / pgvector (use PGVECTOR_CONNECTION to override built URL)
     POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
     POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")

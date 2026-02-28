@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ReportCard } from './ReportCard'
 import { MarkdownContent } from './MarkdownContent'
+import { NoduleImagesList } from './NoduleImagesList'
 
 function formatDate(d) {
   if (!d || d === '-') return d
@@ -81,59 +82,66 @@ export function ExperienceCard({
           </div>
           {generationState?.error && <div className="generation-error">{generationState.error}</div>}
           {generationState?.report && (
-            <div className="generated-report">
-              <div className="generated-report-title">Generated report</div>
-              <div className="generated-report-toolbar">
-                {!isEditingGenerated ? (
-                  <button
-                    type="button"
-                    className="toggle-desc"
-                    onClick={() => setIsEditingGenerated(true)}
-                  >
-                    Edit markdown
-                  </button>
+            <div className="generated-report-block">
+              <div className="generated-report">
+                <div className="generated-report-title">Generated report</div>
+                <div className="generated-report-toolbar">
+                  {!isEditingGenerated ? (
+                    <button
+                      type="button"
+                      className="toggle-desc"
+                      onClick={() => setIsEditingGenerated(true)}
+                    >
+                      Edit markdown
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="toggle-desc"
+                      onClick={() => {
+                        setDraftReport(generationState.report || '')
+                        setIsEditingGenerated(false)
+                      }}
+                    >
+                      Cancel edits
+                    </button>
+                  )}
+                </div>
+                {isEditingGenerated ? (
+                  <textarea
+                    className="generated-report-editor"
+                    value={draftReport}
+                    onChange={(e) => setDraftReport(e.target.value)}
+                    rows={10}
+                    aria-label="Edit generated markdown report"
+                  />
                 ) : (
+                  <div className="generated-report-content">
+                    <MarkdownContent content={draftReport || generationState.report} />
+                  </div>
+                )}
+                <div className="generated-report-toolbar">
                   <button
                     type="button"
-                    className="toggle-desc"
-                    onClick={() => {
-                      setDraftReport(generationState.report || '')
-                      setIsEditingGenerated(false)
-                    }}
+                    className="generate-report-btn"
+                    onClick={() => onSaveGeneratedReport(experience, draftReport)}
+                    disabled={generationState?.saveLoading || !draftReport.trim()}
                   >
-                    Cancel edits
+                    {generationState?.saveLoading ? 'Validating…' : 'Validate and save report'}
                   </button>
+                </div>
+                {generationState?.saveError && (
+                  <div className="generation-error">{generationState.saveError}</div>
+                )}
+                {generationState?.saveSuccess && (
+                  <div className="generation-success">Report saved and validated.</div>
                 )}
               </div>
-              {isEditingGenerated ? (
-                <textarea
-                  className="generated-report-editor"
-                  value={draftReport}
-                  onChange={(e) => setDraftReport(e.target.value)}
-                  rows={10}
-                  aria-label="Edit generated markdown report"
-                />
-              ) : (
-                <div className="generated-report-content">
-                  <MarkdownContent content={draftReport || generationState.report} />
-                </div>
-              )}
-              <div className="generated-report-toolbar">
-                <button
-                  type="button"
-                  className="generate-report-btn"
-                  onClick={() => onSaveGeneratedReport(experience, draftReport)}
-                  disabled={generationState?.saveLoading || !draftReport.trim()}
-                >
-                  {generationState?.saveLoading ? 'Validating…' : 'Validate and save report'}
-                </button>
-              </div>
-              {generationState?.saveError && (
-                <div className="generation-error">{generationState.saveError}</div>
-              )}
-              {generationState?.saveSuccess && (
-                <div className="generation-success">Report saved and validated.</div>
-              )}
+              <NoduleImagesList
+                patientId={experience.patient ?? experience.patient_id}
+                accessionId={experience.accession ?? experience.accession_id}
+                initialImages={generationState.noduleImages}
+              />
             </div>
           )}
           {reports.map((r) => (

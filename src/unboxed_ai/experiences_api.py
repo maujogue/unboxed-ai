@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import subprocess
 import sys
 from typing import Any
@@ -74,8 +75,12 @@ def _fetch_reports() -> list[dict[str, Any]]:
     ]
 
 
-def _compute_segmentation_export() -> Path:
-    """Generate segmentation export JSON via export_nodules_json.py."""
+def _compute_segmentation_export(accession: str | None = None) -> Path:
+    """Generate segmentation export JSON via export_nodules_json.py.
+
+    If accession is set, only that accession is processed and merged into the
+    existing output file (avoids loading everything).
+    """
     root = Path(__file__).resolve().parent.parent.parent
     script_path = root / "export_nodules_json.py"
     output_path = Path(Constants.SEGMENTATION_PATH)
@@ -83,18 +88,102 @@ def _compute_segmentation_export() -> Path:
         output_path = root / output_path
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run(
-        [
-            sys.executable,
-            str(script_path),
-            "--output",
-            str(output_path),
-            "--thoracic-only",
-        ],
-        check=True,
-        cwd=str(root),
-    )
+    cmd = [
+        sys.executable,
+        str(script_path),
+        "--output",
+        str(output_path),
+        "--thoracic-only",
+    ]
+    if accession and str(accession).strip():
+        cmd.extend(["--accession", str(accession).strip()])
+    subprocess.run(cmd, check=True, cwd=str(root))
     return output_path
+
+
+def _get_nodule_images_dir() -> Path:
+    """Return the project-root path for nodule export images."""
+    root = Path(__file__).resolve().parent.parent.parent
+    out = Path(Constants.NODULE_IMAGES_DIR)
+    return root / out if not out.is_absolute() else out
+
+
+def _run_nodule_images_export(accession: str | None = None) -> None:
+    """Run generate_nodule_images.py to (re)generate finding images.
+
+    If accession is set, only that accession is processed. On failure, log and continue.
+    """
+    root = Path(__file__).resolve().parent.parent.parent
+    script_path = root / "generate_nodule_images.py"
+    output_dir = _get_nodule_images_dir()
+    if not script_path.exists():
+        logging.warning(
+            "generate_nodule_images.py not found, skipping nodule images export"
+        )
+        return
+    try:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        cmd = [sys.executable, str(script_path), "--output", str(output_dir)]
+        if accession and str(accession).strip():
+            cmd.extend(["--accession", str(accession).strip()])
+        subprocess.run(cmd, check=True, cwd=str(root))
+    except subprocess.CalledProcessError as e:
+        logging.warning(
+            "Nodule images export failed: %s; report will still be generated", e
+        )
+    except Exception as e:
+        logging.warning(
+            "Nodule images export error: %s; report will still be generated", e
+        )
+
+
+def _list_nodule_images(patient_id: str, accession_id: str) -> list[dict[str, str]]:
+    """List nodule image entries for a patient and accession. Returns [{url, filename}, ...]."""
+    pid = (patient_id or "").strip()
+    if ".." in pid or "/" in pid or "\\" in pid:
+        return []
+    base = _get_nodule_images_dir()
+    patient_dir = base / pid
+    if not patient_dir.is_dir():
+        return []
+    accession_prefix = (accession_id or "").strip()
+    images: list[dict[str, str]] = []
+    for path in sorted(patient_dir.iterdir()):
+        if not path.is_file() or path.suffix.lower() != ".png":
+            continue
+        name = path.name
+        if accession_prefix and not name.startswith(accession_prefix + "_"):
+            continue
+        url = f"/api/nodule-images/static/{pid}/{name}"
+        images.append({"url": url, "filename": name})
+    return images
+
+
+@app.get("/api/nodule-images")
+def get_nodule_images(
+    patient_id: str = "",
+    accession_id: str = "",
+) -> dict[str, Any]:
+    """List nodule finding image URLs for a patient and accession."""
+    return {"images": _list_nodule_images(patient_id, accession_id)}
+
+
+@app.get("/api/nodule-images/static/{patient_id}/{filename}")
+def serve_nodule_image(patient_id: str, filename: str) -> FileResponse:
+    """Serve a single nodule image file (path-safe, no traversal)."""
+    pid = (patient_id or "").strip()
+    fname = (filename or "").strip()
+    if not pid or not fname:
+        raise HTTPException(status_code=400, detail="patient_id and filename required")
+    if ".." in pid or "/" in pid or "\\" in pid:
+        raise HTTPException(status_code=400, detail="invalid patient_id")
+    if ".." in fname or "/" in fname or "\\" in fname:
+        raise HTTPException(status_code=400, detail="invalid filename")
+    base = _get_nodule_images_dir()
+    path = base / pid / fname
+    if not path.is_file() or path.suffix.lower() != ".png":
+        raise HTTPException(status_code=404, detail="image not found")
+    return FileResponse(path, media_type="image/png")
 
 
 @app.get("/api/experiences")
@@ -138,6 +227,7 @@ def get_experiences() -> list[dict[str, Any]]:
                 "patient_id": patient,
                 "patient_name": _norm(s.get("patient_name", "")),
                 "accession": accession,
+                "accession_id": accession,  # alias for frontend compatibility
                 "description": s.get("description", "-"),
                 "date": s.get("date", "-"),
                 "modality": s.get("modality", "-"),
@@ -149,32 +239,59 @@ def get_experiences() -> list[dict[str, Any]]:
 
 class GenerateReportRequest(BaseModel):
     patient_id: str
+    experience_id: str | None = (
+        None  # accession number for which to generate the report
+    )
 
 
 @app.post("/api/reports/generate")
-def generate_report(req: GenerateReportRequest) -> dict[str, str]:
-    patient_id = str(req.patient_id).strip()
+def generate_report(req: GenerateReportRequest) -> dict[str, Any]:
+    patient_id = str(req.patient_id or "").strip()
+    experience_id = (
+        str(req.experience_id or "").strip() if req.experience_id is not None else ""
+    )
     if not patient_id:
         raise HTTPException(status_code=400, detail="patient_id is required")
+    if not experience_id:
+        raise HTTPException(
+            status_code=400,
+            detail="experience_id (accession number) is required. Pass the accession of the experience to generate a report for.",
+        )
 
     try:
+        reports = _fetch_reports()
+        validated_accession_numbers = {
+            str(r["experience_id"])
+            for r in reports
+            if str(r.get("patient_id", "")).strip() == patient_id
+            and r.get("is_validated") is True
+        }
         reports_df = excel_to_df(Constants.REPORTS_PATH)
         orthanc_df = fetch_studies_from_orthanc()
         merged_df = merge_on_accession(reports_df, orthanc_df)
-        segmentation_path = _compute_segmentation_export()
+        segmentation_path = _compute_segmentation_export(accession=experience_id)
+        _run_nodule_images_export(accession=experience_id)
         report_text = generate_final_report(
             merged_df,
             segmentation_algo_res_path=str(segmentation_path),
             patient_id=patient_id,
+            report_accession_number=experience_id,
             output_file="",
             use_judge=True,
+            validated_accession_numbers=validated_accession_numbers,
         )
+        nodule_images = _list_nodule_images(patient_id, experience_id)
     except Exception as e:
         raise HTTPException(
             status_code=502, detail=f"Report generation error: {e!s}"
         ) from e
 
-    return {"patient_id": patient_id, "report": report_text}
+    return {
+        "patient_id": patient_id,
+        "experience_id": experience_id,
+        "report": report_text,
+        "nodule_images": nodule_images,
+    }
 
 
 class SaveReportRequest(BaseModel):
@@ -296,6 +413,13 @@ def save_report(req: SaveReportRequest) -> dict[str, Any]:
 def _setup_frontend_routes() -> None:
     """Serve React build from frontend/dist, or fallback to vanilla frontend."""
     root = Path(__file__).resolve().parent.parent.parent
+    nodule_dir = _get_nodule_images_dir()
+    nodule_dir.mkdir(parents=True, exist_ok=True)
+    app.mount(
+        "/api/nodule-images/static",
+        StaticFiles(directory=str(nodule_dir)),
+        name="nodule_images_static",
+    )
     dist_path = root / "frontend" / "dist"
     vanilla_path = root / "frontend.vanilla"
 

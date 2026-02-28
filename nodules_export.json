@@ -12,102 +12,6 @@
     "nodules": []
   },
   {
-    "patient_id": "136F50A1",
-    "accession_number": "10492106",
-    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-2561255906362652.dcm",
-    "ct_series_uid": "1.2.840.113654.2.70.1.321660327753674499840912561255906362652",
-    "study_description": "TC TÒRAX, TC ABDOMEN, TC PELVIS",
-    "scan_type": "TAP/multi-région",
-    "z_ct_max": 11.0,
-    "z_thoracic_min": -239.0,
-    "nodule_count": 3,
-    "nodules": [
-      {
-        "number": 1,
-        "diameter": "diameter 19.4mm",
-        "x": 79.4,
-        "y": -13.7,
-        "z": -51.8,
-        "z_min": -59.0,
-        "z_max": -44.0,
-        "is_thoracic": true
-      },
-      {
-        "number": 2,
-        "diameter": "diameter 27.6mm",
-        "x": 52.5,
-        "y": 37.4,
-        "z": -123.9,
-        "z_min": -139.0,
-        "z_max": -109.0,
-        "is_thoracic": true
-      },
-      {
-        "number": 3,
-        "diameter": "diameter 11.8mm",
-        "x": -64.3,
-        "y": -11.6,
-        "z": -101.8,
-        "z_min": -104.0,
-        "z_max": -99.0,
-        "is_thoracic": true
-      }
-    ]
-  },
-  {
-    "patient_id": "0301B7D6",
-    "accession_number": "11297707",
-    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-0676620742772698.dcm",
-    "ct_series_uid": "1.2.840.113654.2.70.1.305312581172502543406090676620742772698",
-    "study_description": "TC TÒRAX, TC ABDOMEN, TC PELVIS",
-    "scan_type": "TAP/multi-région",
-    "z_ct_max": 50.0,
-    "z_thoracic_min": -200.0,
-    "nodule_count": 4,
-    "nodules": [
-      {
-        "number": 1,
-        "diameter": "diameter 59.0mm",
-        "x": -46.0,
-        "y": 54.9,
-        "z": 6.9,
-        "z_min": -10.0,
-        "z_max": 20.0,
-        "is_thoracic": true
-      },
-      {
-        "number": 2,
-        "diameter": "diameter 37.4mm",
-        "x": -42.7,
-        "y": 79.2,
-        "z": -88.9,
-        "z_min": -105.0,
-        "z_max": -80.0,
-        "is_thoracic": true
-      },
-      {
-        "number": 3,
-        "diameter": "diameter 10.7mm",
-        "x": -93.4,
-        "y": 54.1,
-        "z": -97.3,
-        "z_min": -105.0,
-        "z_max": -95.0,
-        "is_thoracic": true
-      },
-      {
-        "number": 4,
-        "diameter": "diameter 17.3mm",
-        "x": -102.4,
-        "y": -14.7,
-        "z": -157.3,
-        "z_min": -165.0,
-        "z_max": -155.0,
-        "is_thoracic": true
-      }
-    ]
-  },
-  {
     "patient_id": "0301B7D6",
     "accession_number": "11092835",
     "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-5601903016757313.dcm",
@@ -301,59 +205,6 @@
         "z": -134.6,
         "z_min": -138.8,
         "z_max": -133.8,
-        "is_thoracic": true
-      }
-    ]
-  },
-  {
-    "patient_id": "063F6BB9",
-    "accession_number": "18755655",
-    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-1505582503932446.dcm",
-    "ct_series_uid": "1.2.840.113654.2.70.1.290914229621286211272071505582503932446",
-    "study_description": "TC TÒRAX, TC ABDOMEN",
-    "scan_type": "TAP/multi-région",
-    "z_ct_max": 3.8,
-    "z_thoracic_min": -246.2,
-    "nodule_count": 4,
-    "nodules": [
-      {
-        "number": 1,
-        "diameter": "diameter 22.8mm",
-        "x": -16.3,
-        "y": 42.1,
-        "z": -112.1,
-        "z_min": -121.2,
-        "z_max": -101.2,
-        "is_thoracic": true
-      },
-      {
-        "number": 2,
-        "diameter": "diameter 14.8mm",
-        "x": -66.4,
-        "y": 67.0,
-        "z": -175.4,
-        "z_min": -186.2,
-        "z_max": -171.2,
-        "is_thoracic": true
-      },
-      {
-        "number": 3,
-        "diameter": "diameter 13.3mm",
-        "x": -57.6,
-        "y": -5.3,
-        "z": -102.0,
-        "z_min": -106.2,
-        "z_max": -101.2,
-        "is_thoracic": true
-      },
-      {
-        "number": 4,
-        "diameter": "diameter 13.6mm",
-        "x": -37.6,
-        "y": -86.9,
-        "z": -146.3,
-        "z_min": -151.2,
-        "z_max": -146.2,
         "is_thoracic": true
       }
     ]
@@ -585,6 +436,145 @@
   },
   {
     "patient_id": "17A76C2A",
+    "accession_number": "98426752",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-1170962054851383.dcm",
+    "ct_series_uid": "1.2.840.113654.2.70.1.146588603417193456228411170962054851383",
+    "study_description": "TC TÒRAX",
+    "scan_type": "thorax-seul",
+    "z_ct_max": 19.5,
+    "z_thoracic_min": null,
+    "nodule_count": 3,
+    "nodules": [
+      {
+        "number": 1,
+        "diameter": "diameter 2.5mm",
+        "x": -90.0,
+        "y": 0.3,
+        "z": -37.5,
+        "z_min": -39.2,
+        "z_max": -36.8,
+        "is_thoracic": true
+      },
+      {
+        "number": 2,
+        "diameter": "diameter 7.3mm",
+        "x": -70.6,
+        "y": -72.2,
+        "z": -122.0,
+        "z_min": -124.2,
+        "z_max": -120.5,
+        "is_thoracic": true
+      },
+      {
+        "number": 3,
+        "diameter": "diameter 7.1mm",
+        "x": -100.8,
+        "y": 53.8,
+        "z": -134.9,
+        "z_min": -136.8,
+        "z_max": -133.0,
+        "is_thoracic": true
+      }
+    ]
+  },
+  {
+    "patient_id": "0301B7D6",
+    "accession_number": "11297707",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-0676620742772698.dcm",
+    "ct_series_uid": "1.2.840.113654.2.70.1.305312581172502543406090676620742772698",
+    "study_description": "TC TÒRAX, TC ABDOMEN, TC PELVIS",
+    "scan_type": "TAP/multi-région",
+    "z_ct_max": 50.0,
+    "z_thoracic_min": -200.0,
+    "nodule_count": 4,
+    "nodules": [
+      {
+        "number": 1,
+        "diameter": "diameter 59.0mm",
+        "x": -46.0,
+        "y": 54.9,
+        "z": 6.9,
+        "z_min": -10.0,
+        "z_max": 20.0,
+        "is_thoracic": true
+      },
+      {
+        "number": 2,
+        "diameter": "diameter 37.4mm",
+        "x": -42.7,
+        "y": 79.2,
+        "z": -88.9,
+        "z_min": -105.0,
+        "z_max": -80.0,
+        "is_thoracic": true
+      },
+      {
+        "number": 3,
+        "diameter": "diameter 10.7mm",
+        "x": -93.4,
+        "y": 54.1,
+        "z": -97.3,
+        "z_min": -105.0,
+        "z_max": -95.0,
+        "is_thoracic": true
+      },
+      {
+        "number": 4,
+        "diameter": "diameter 17.3mm",
+        "x": -102.4,
+        "y": -14.7,
+        "z": -157.3,
+        "z_min": -165.0,
+        "z_max": -155.0,
+        "is_thoracic": true
+      }
+    ]
+  },
+  {
+    "patient_id": "136F50A1",
+    "accession_number": "10492106",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-2561255906362652.dcm",
+    "ct_series_uid": "1.2.840.113654.2.70.1.321660327753674499840912561255906362652",
+    "study_description": "TC TÒRAX, TC ABDOMEN, TC PELVIS",
+    "scan_type": "TAP/multi-région",
+    "z_ct_max": 11.0,
+    "z_thoracic_min": -239.0,
+    "nodule_count": 3,
+    "nodules": [
+      {
+        "number": 1,
+        "diameter": "diameter 19.4mm",
+        "x": 79.4,
+        "y": -13.7,
+        "z": -51.8,
+        "z_min": -59.0,
+        "z_max": -44.0,
+        "is_thoracic": true
+      },
+      {
+        "number": 2,
+        "diameter": "diameter 27.6mm",
+        "x": 52.5,
+        "y": 37.4,
+        "z": -123.9,
+        "z_min": -139.0,
+        "z_max": -109.0,
+        "is_thoracic": true
+      },
+      {
+        "number": 3,
+        "diameter": "diameter 11.8mm",
+        "x": -64.3,
+        "y": -11.6,
+        "z": -101.8,
+        "z_min": -104.0,
+        "z_max": -99.0,
+        "is_thoracic": true
+      }
+    ]
+  },
+  {
+    "patient_id": "17A76C2A",
     "accession_number": "26721665",
     "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-6442385337654814.dcm",
     "ct_series_uid": "1.2.840.113654.2.70.1.251872505507105532891396442385337654814",
@@ -627,44 +617,54 @@
     ]
   },
   {
-    "patient_id": "17A76C2A",
-    "accession_number": "98426752",
-    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-1170962054851383.dcm",
-    "ct_series_uid": "1.2.840.113654.2.70.1.146588603417193456228411170962054851383",
-    "study_description": "TC TÒRAX",
-    "scan_type": "thorax-seul",
-    "z_ct_max": 19.5,
-    "z_thoracic_min": null,
-    "nodule_count": 3,
+    "patient_id": "063F6BB9",
+    "accession_number": "18755655",
+    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-1505582503932446.dcm",
+    "ct_series_uid": "1.2.840.113654.2.70.1.290914229621286211272071505582503932446",
+    "study_description": "TC TÒRAX, TC ABDOMEN",
+    "scan_type": "TAP/multi-région",
+    "z_ct_max": 3.8,
+    "z_thoracic_min": -246.2,
+    "nodule_count": 4,
     "nodules": [
       {
         "number": 1,
-        "diameter": "diameter 2.5mm",
-        "x": -90.0,
-        "y": 0.3,
-        "z": -37.5,
-        "z_min": -39.2,
-        "z_max": -36.8,
+        "diameter": "diameter 22.8mm",
+        "x": -16.3,
+        "y": 42.1,
+        "z": -112.1,
+        "z_min": -121.2,
+        "z_max": -101.2,
         "is_thoracic": true
       },
       {
         "number": 2,
-        "diameter": "diameter 7.3mm",
-        "x": -70.6,
-        "y": -72.2,
-        "z": -122.0,
-        "z_min": -124.2,
-        "z_max": -120.5,
+        "diameter": "diameter 14.8mm",
+        "x": -66.4,
+        "y": 67.0,
+        "z": -175.4,
+        "z_min": -186.2,
+        "z_max": -171.2,
         "is_thoracic": true
       },
       {
         "number": 3,
-        "diameter": "diameter 7.1mm",
-        "x": -100.8,
-        "y": 53.8,
-        "z": -134.9,
-        "z_min": -136.8,
-        "z_max": -133.0,
+        "diameter": "diameter 13.3mm",
+        "x": -57.6,
+        "y": -5.3,
+        "z": -102.0,
+        "z_min": -106.2,
+        "z_max": -101.2,
+        "is_thoracic": true
+      },
+      {
+        "number": 4,
+        "diameter": "diameter 13.6mm",
+        "x": -37.6,
+        "y": -86.9,
+        "z": -146.3,
+        "z_min": -151.2,
+        "z_max": -146.2,
         "is_thoracic": true
       }
     ]

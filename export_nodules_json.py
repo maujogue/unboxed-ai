@@ -23,6 +23,8 @@ Options:
   --thoracic-only          N'inclure que les nodules dans la zone thoracique
   --thoracic-depth FLOAT   Profondeur (mm) depuis l'apex du scan délimitant
                            la zone thoracique pour les scans TAP (défaut: 250 mm)
+  --accession ACC          Traiter uniquement cette accession; fusionne avec
+                           le fichier existant (évite de tout recharger).
 """
 
 import argparse
@@ -99,14 +101,24 @@ def parse_args() -> argparse.Namespace:
             "détectés via StudyDescription. (défaut: 250 mm)"
         ),
     )
+    parser.add_argument(
+        "--accession",
+        type=str,
+        default=None,
+        metavar="ACC",
+        help="Traiter uniquement cette accession; fusionne avec le fichier existant.",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+    accession_filter = (args.accession or "").strip() or None
 
     entries = seg_registry.list_entries()
     print(f"{len(entries)} SEG(s) trouvé(s) dans le registre.")
+    if accession_filter:
+        print(f"Filtre accession : {accession_filter!r}")
     if args.thoracic_only:
         print(
             f"Filtre thoracique activé (profondeur TAP: {args.thoracic_depth} mm). "
@@ -114,6 +126,7 @@ def main() -> None:
         )
 
     export = []
+    output_path = Path(args.output)
 
     for ct_series_uid in entries:
         seg_path = seg_registry.lookup(ct_series_uid)
@@ -125,7 +138,10 @@ def main() -> None:
 
         ds = pydicom.dcmread(str(seg_path), stop_before_pixels=True)
         patient_id = str(getattr(ds, "PatientID", "unknown"))
-        accession = str(getattr(ds, "AccessionNumber", ""))
+        accession = str(getattr(ds, "AccessionNumber", "")).strip()
+        if accession_filter and accession != accession_filter:
+            continue
+
         study_desc = str(getattr(ds, "StudyDescription", ""))
 
         thorax_only = scan_is_thorax_only(study_desc)
@@ -174,7 +190,21 @@ def main() -> None:
             msg += f" ({skipped} hors zone thoracique exclus)"
         print(msg)
 
-    output_path = Path(args.output)
+    if accession_filter and output_path.exists():
+        with open(output_path, encoding="utf-8") as f:
+            existing = json.load(f)
+        if not isinstance(existing, list):
+            existing = []
+        existing = [
+            e
+            for e in existing
+            if (e.get("accession_number") or "").strip() != accession_filter
+        ]
+        export = existing + export
+        print(
+            f"  Fusion avec le fichier existant ({len(existing)} autres séries conservées)."
+        )
+
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(export, f, indent=2, ensure_ascii=False)
 
