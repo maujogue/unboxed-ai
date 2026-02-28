@@ -1,0 +1,25 @@
+[project]
+name = "unboxed-ai"
+version = "0.1.0"
+description = "Our take on the unboxed ai hackathon"
+authors = [
+    { name = "Mathis", email = "maujogue15@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "dcm-seg-nodules",
+    "dicomweb-client>=0.60.1",
+    "numpy>=2.4.2",
+    "pydicom>=3.0.1",
+    "simpleitk>=2.5.3",
+]
+
+[project.scripts]
+unboxed-ai = "unboxed_ai:test"
+
+[build-system]
+requires = ["uv_build>=0.10.0,<0.11.0"]
+build-backend = "uv_build"
+
+[tool.uv.sources]
+dcm-seg-nodules = { path = "dcm_seg_nodules-1.0.0-py3-none-any.whl" }
