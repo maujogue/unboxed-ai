@@ -56,7 +56,7 @@ dev = [
 exclude = ["WELCOME.ipynb"]
 
 [tool.ty.src]
-exclude = ["WELCOME.ipynb", "examples/langchain_mistralai_integration_example.py", "tests/test_mistral_call.py"]
+exclude = ["WELCOME.ipynb", "examples/langchain_mistralai_integration_example.py", "tests/test_mistral_call.py", "src/unboxed_ai/orthanc_pipeline.py"]
 
 [tool.pytest.ini_options]
 addopts = ["-m", "not integration"]
