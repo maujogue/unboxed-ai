@@ -15,6 +15,16 @@ dependencies = [
     "numpy>=2.4.2",
     "pydicom>=3.0.1",
     "simpleitk>=2.5.3",
+    "SimpleITK",
+    "nibabel",
+    "monai",
+    "opencv-python",
+    "scikit-image",
+    "dicom2nifti",
+    "pynetdicom",
+    "pandas",
+    "matplotlib",
+    "plotly",
 ]
 
 [project.scripts]
