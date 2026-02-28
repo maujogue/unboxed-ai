@@ -1,0 +1,1014 @@
+[
+  {
+    "orthanc_id": "18235370-502c4371-dd6528eb-2140ad3c-45f34ae3",
+    "patient_id": "0301B7D6",
+    "patient_name": "0301B7D6",
+    "sex": "F",
+    "birth_date": "",
+    "studies": [
+      {
+        "orthanc_id": "1fc1a205-400007b2-d2a78317-dc63d295-6eb6bee9",
+        "accession": "31981427",
+        "description": "TC TÒRAX, TC ABDOMEN, TC PELVIS",
+        "date": "20200714",
+        "study_uid": "1.2.840.113654.2.70.1.59329475712741322571732705113539577857",
+        "series": [
+          {
+            "orthanc_id": "b79441c3-684aa6f4-61063e38-1b155327-fc41e625",
+            "modality": "CT",
+            "description": "CEV torax",
+            "series_number": "2",
+            "series_uid": "1.2.840.113654.2.70.1.75701254400969968234161677733927030393",
+            "instances": 111
+          },
+          {
+            "orthanc_id": "78184e6a-2923cc98-4012d104-3cecb17f-8cc06569",
+            "modality": "CT",
+            "description": "CEV abdomen",
+            "series_number": "3",
+            "series_uid": "1.2.840.113654.2.70.1.65544612681705604371371721641925941442",
+            "instances": 91
+          },
+          {
+            "orthanc_id": "923db4e6-bec333f3-ff0004e3-1c1493ad-c722e3f6",
+            "modality": "CT",
+            "description": "SAG COLUMNA 3mm",
+            "series_number": "601",
+            "series_uid": "1.2.840.113654.2.70.1.282244052372274387187526857325308884441",
+            "instances": 25
+          },
+          {
+            "orthanc_id": "ace0fe54-f76af8e9-ef554494-f031d525-9304a688",
+            "modality": "SR",
+            "description": "Review & Annotation SR by Philippe Michelon | Feb-18-2026 13:27.",
+            "series_number": "1000",
+            "series_uid": "1.2.840.113619.2.379.280863211953333.17714175673670000",
+            "instances": 1
+          },
+          {
+            "orthanc_id": "dff27929-91d953b1-f557af75-176014b0-8a617999",
+            "modality": "SR",
+            "description": "Review & Annotation SR by Philippe Michelon | Feb-20-2026 16:28.",
+            "series_number": "1001",
+            "series_uid": "1.2.840.113619.2.379.887756616756080.17716011902620000",
+            "instances": 1
+          },
+          {
+            "orthanc_id": "7d2fd360-e7d9eee2-2c6e6db7-4e02bbca-9c32dfd1",
+            "modality": "SEG",
+            "description": "Review & Annotation Segmentations by Philippe Michelon | Feb-18.",
+            "series_number": "2000",
+            "series_uid": "1.2.840.113619.2.379.270201901578848.17714175667740000",
+            "instances": 1
+          },
+          {
+            "orthanc_id": "0a4869bf-edeca4e0-52024dd2-fb984738-3c1b5cef",
+            "modality": "SEG",
+            "description": "Review & Annotation Segmentations by Philippe Michelon | Feb-20.",
+            "series_number": "2001",
+            "series_uid": "1.2.840.113619.2.379.170817757989842.17716011894570000",
+            "instances": 1
+          }
+        ]
+      },
+      {
+        "orthanc_id": "60acace4-4c98050d-278e16d7-11a9dd5e-78bb4571",
+        "accession": "92106962",
+        "description": "TC TÓRAX, TC ABDOMEN, TC PELVIS",
+        "date": "20201024",
+        "study_uid": "1.2.840.113654.2.70.1.329236354636066715426093961352142574065",
+        "series": [
+          {
+            "orthanc_id": "8db68771-58bdba9b-0508196e-7ac747d7-13e3d772",
+            "modality": "CT",
+            "description": "CEV torax",
+            "series_number": "2",
+            "series_uid": "1.2.840.113654.2.70.1.258066848945691652957550786319952094534",
+            "instances": 96
+          },
+          {
+            "orthanc_id": "79cc80a9-6e202455-7b05fda5-3e0faebd-da818bb6",
+            "modality": "CT",
+            "description": "CEV abdomen",
+            "series_number": "3",
+            "series_uid": "1.2.840.113654.2.70.1.322886111407540090065809088656676733115",
+            "instances": 88
+          },
+          {
+            "orthanc_id": "4b996546-73fa9d9f-88b5f3d0-fa0bdf78-1677e81d",
+            "modality": "CT",
+            "description": "lung",
+            "series_number": "4",
+            "series_uid": "1.2.840.113654.2.70.1.91743777836970020216344114158255732019",
+            "instances": 64
+          },
+          {
+            "orthanc_id": "95b73bcd-7f7594f7-32016262-d64fd585-e479874c",
+            "modality": "CT",
+            "description": "SAG COLUMNA 3mm",
+            "series_number": "601",
+            "series_uid": "1.2.840.113654.2.70.1.134809756162784204379771449612816637464",
+            "instances": 37
+          },
+          {
+            "orthanc_id": "af411fce-82b58e32-c062036d-d8b89d2c-f57f7da3",
+            "modality": "SR",
+            "description": "Review & Annotation SR by Philippe Michelon | Feb-18-2026 13:30.",
+            "series_number": "1001",
+            "series_uid": "1.2.840.113619.2.379.254231494512795.17714176951420000",
+            "instances": 1
+          },
+          {
+            "orthanc_id": "aacff538-65fb0b96-71d54464-5cd2a3c3-600c7a35",
+            "modality": "SEG",
+            "description": "Review & Annotation Segmentations by Philippe Michelon | Feb-18.",
+            "series_number": "2001",
+            "series_uid": "1.2.840.113619.2.379.988344278343490.17714176945490000",
+            "instances": 1
+          }
+        ]
+      },
+      {
+        "orthanc_id": "6506c934-636687be-9b5ccbbd-98942bee-62db5de0",
+        "accession": "11092835",
+        "description": "TC TÒRAX, TC ABDOMEN, TC PELVIS",
+        "date": "20201125",
+        "study_uid": "1.2.840.113654.2.70.1.93633514910868225835618840012692828732",
+        "series": [
+          {
+            "orthanc_id": "88b14c07-af2dca25-079cfe69-fb493c43-dcb8a065",
+            "modality": "CT",
+            "description": "CEV torax",
+            "series_number": "2",
+            "series_uid": "1.2.840.113654.2.70.1.283289855609203991111775601903016757313",
+            "instances": 92
+          },
+          {
+            "orthanc_id": "63a19f3f-5530d0cb-d6d6e469-8edbd25a-6a44f5d8",
+            "modality": "CT",
+            "description": "CEV abdomen",
+            "series_number": "3",
+            "series_uid": "1.2.840.113654.2.70.1.220406724962220083423700176835685960547",
+            "instances": 91
+          },
+          {
+            "orthanc_id": "091adaa8-1b17bd85-46c78f81-712c79ba-e9667e17",
+            "modality": "CT",
+            "description": "lung",
+            "series_number": "4",
+            "series_uid": "1.2.840.113654.2.70.1.106306983070140352490022442765150547170",
+            "instances": 63
+          },
+          {
+            "orthanc_id": "daed6a60-989dea67-86588424-a90472d0-d0a46e18",
+            "modality": "CT",
+            "description": "SAG COLUMNA 3mm",
+            "series_number": "601",
+            "series_uid": "1.2.840.113654.2.70.1.271045408017051579279230983219788359077",
+            "instances": 37
+          },
+          {
+            "orthanc_id": "7bece904-944f35f6-5742163f-8c31032c-dddeb896",
+            "modality": "SR",
+            "description": "Review & Annotation SR by Philippe Michelon | Feb-18-2026 13:35.",
+            "series_number": "1001",
+            "series_uid": "1.2.840.113619.2.379.348821868762710.17714180136180000",
+            "instances": 1
+          },
+          {
+            "orthanc_id": "04bf4582-1b214860-5e47514c-40bc0a7f-79c50106",
+            "modality": "SEG",
+            "description": "Review & Annotation Segmentations by Philippe Michelon | Feb-18.",
+            "series_number": "2001",
+            "series_uid": "1.2.840.113619.2.379.278087826990369.17714180130380000",
+            "instances": 1
+          }
+        ]
+      },
+      {
+        "orthanc_id": "cdbea8c7-336b53e8-2fd06e10-d16f5a2c-c5fe896c",
+        "accession": "11297707",
+        "description": "TC TÒRAX, TC ABDOMEN, TC PELVIS",
+        "date": "20210117",
+        "study_uid": "1.2.840.113654.2.70.1.175726506117259318462997439791213664784",
+        "series": [
+          {
+            "orthanc_id": "75e5ad5f-15d20424-75e54f8c-82c142c8-43973c27",
+            "modality": "CT",
+            "description": "CEV torax",
+            "series_number": "2",
+            "series_uid": "1.2.840.113654.2.70.1.305312581172502543406090676620742772698",
+            "instances": 91
+          },
+          {
+            "orthanc_id": "f9d8578b-ddddb9e9-865df367-8cb707ab-249e9da0",
+            "modality": "CT",
+            "description": "CEV abdomen",
+            "series_number": "3",
+            "series_uid": "1.2.840.113654.2.70.1.125239133156715072125414152445086262459",
+            "instances": 87
+          },
+          {
+            "orthanc_id": "862124b5-7a589371-62ac4e84-53b13209-5ae76e7a",
+            "modality": "CT",
+            "description": "lung",
+            "series_number": "4",
+            "series_uid": "1.2.840.113654.2.70.1.154684867759382268708519541606911630013",
+            "instances": 60
+          },
+          {
+            "orthanc_id": "223048c2-033335ea-a0d1983a-a77ac741-31cc36de",
+            "modality": "CT",
+            "description": "SAG COLUMNA 3mm",
+            "series_number": "601",
+            "series_uid": "1.2.840.113654.2.70.1.65471256855834376573217645910303160406",
+            "instances": 33
+          },
+          {
+            "orthanc_id": "f69929dd-babf13c3-af291aaf-73146c54-ae161af1",
+            "modality": "SR",
+            "description": "Review & Annotation SR by Philippe Michelon | Feb-18-2026 13:41.",
+            "series_number": "1002",
+            "series_uid": "1.2.840.113619.2.379.157802909914540.17714183620160000",
+            "instances": 1
+          },
+          {
+            "orthanc_id": "6697cead-321c9146-66052f7a-65a1bfa1-5d46d55d",
+            "modality": "SEG",
+            "description": "Review & Annotation Segmentations by Philippe Michelon | Feb-18.",
+            "series_number": "2002",
+            "series_uid": "1.2.840.113619.2.379.189295942847760.17714183610240000",
+            "instances": 1
+          }
+        ]
+      },
+      {
+        "orthanc_id": "eff187e4-eb45afdd-9e878077-554c2af9-fa0427a8",
+        "accession": "57329381",
+        "description": "TC TÒRAX, TC ABDOMEN, TC PELVIS",
+        "date": "20200901",
+        "study_uid": "1.2.840.113654.2.70.1.239877995925294267438107418183306232517",
+        "series": [
+          {
+            "orthanc_id": "6c48b78a-50143ec2-29c60bb8-931dc1af-ed657d65",
+            "modality": "CT",
+            "description": "CEV torax",
+            "series_number": "2",
+            "series_uid": "1.2.840.113654.2.70.1.125818391062017004129811730260722258634",
+            "instances": 89
+          },
+          {
+            "orthanc_id": "53766997-737108ad-d360c84e-eb4c6b83-a3193f7b",
+            "modality": "CT",
+            "description": "CEV abdomen",
+            "series_number": "3",
+            "series_uid": "1.2.840.113654.2.70.1.35980708065889714075737662918636586029",
+            "instances": 85
+          },
+          {
+            "orthanc_id": "37157566-a2ff8164-78aa3c26-8619d5df-c516b795",
+            "modality": "CT",
+            "description": "lung",
+            "series_number": "4",
+            "series_uid": "1.2.840.113654.2.70.1.320594398871510422635607477387086077908",
+            "instances": 64
+          },
+          {
+            "orthanc_id": "b8a78574-e12ee251-335d16c8-d98c6049-f2e3a913",
+            "modality": "CT",
+            "description": "SAG COLUMNA 3mm",
+            "series_number": "601",
+            "series_uid": "1.2.840.113654.2.70.1.19685614611328557873843543757627203729",
+            "instances": 37
+          },
+          {
+            "orthanc_id": "0a70a14b-b4a82437-fd69d391-eb723342-2239ec5d",
+            "modality": "SR",
+            "description": "Review & Annotation SR by Philippe Michelon | Feb-18-2026 13:27.",
+            "series_number": "1000",
+            "series_uid": "1.2.840.113619.2.379.766322198624850.17714175549530000",
+            "instances": 1
+          },
+          {
+            "orthanc_id": "d616f9c9-ed4176b5-5aed3799-0273736d-3d89aa47",
+            "modality": "SEG",
+            "description": "Review & Annotation Segmentations by Philippe Michelon | Feb-18.",
+            "series_number": "2000",
+            "series_uid": "1.2.840.113619.2.379.174607536512031.17714175543820000",
+            "instances": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "orthanc_id": "4fef10f9-8609c18b-f6cb858c-31feae68-22557b23",
+    "patient_id": "063F6BB9",
+    "patient_name": "063F6BB9",
+    "sex": "F",
+    "birth_date": "",
+    "studies": [
+      {
+        "orthanc_id": "25914a07-16559a4a-c497c21b-8e18d09a-59091625",
+        "accession": "18755655",
+        "description": "TC TÒRAX, TC ABDOMEN",
+        "date": "20230725",
+        "study_uid": "1.2.840.113654.2.70.1.136878639688093559135529149898711208671",
+        "series": [
+          {
+            "orthanc_id": "62a86ed0-e1f8b9b1-54cbfb68-ab32ef25-6ed7614c",
+            "modality": "CT",
+            "description": "Scouts CUERPO",
+            "series_number": "1",
+            "series_uid": "1.2.840.113654.2.70.1.310644826952285328630260011809628896363",
+            "instances": 2
+          },
+          {
+            "orthanc_id": "c0f71428-aa182104-82b3b00a-17a54133-a704d703",
+            "modality": "CT",
+            "description": "CEV torax",
+            "series_number": "2",
+            "series_uid": "1.2.840.113654.2.70.1.290914229621286211272071505582503932446",
+            "instances": 90
+          },
+          {
+            "orthanc_id": "37fe802f-aa17af41-200ef814-1e9bdd93-7a7ad66e",
+            "modality": "CT",
+            "description": "CEV abdomen",
+            "series_number": "3",
+            "series_uid": "1.2.840.113654.2.70.1.225337645594177264618076234770284859306",
+            "instances": 69
+          },
+          {
+            "orthanc_id": "be33da89-ff0aa105-4377be69-7a784e56-2c0b567d",
+            "modality": "CT",
+            "description": "lung",
+            "series_number": "4",
+            "series_uid": "1.2.840.113654.2.70.1.125415369568495616327010348819310834762",
+            "instances": 58
+          },
+          {
+            "orthanc_id": "f292c58a-53557cdb-23b6cd48-015510e4-0cf1781f",
+            "modality": "CT",
+            "description": "SAG COLUMNA 3mm",
+            "series_number": "601",
+            "series_uid": "1.2.840.113654.2.70.1.113547069705199521092843634818601108219",
+            "instances": 37
+          },
+          {
+            "orthanc_id": "bd694602-49c5494c-c8f38686-5388cd56-200c136c",
+            "modality": "SR",
+            "description": "Review & Annotation SR by Philippe Michelon | Feb-18-2026 17:02.",
+            "series_number": "1000",
+            "series_uid": "1.2.840.113619.2.379.502177573534500.17714304420840000",
+            "instances": 1
+          },
+          {
+            "orthanc_id": "2e6251f7-b1894a01-e2223906-b9a1b696-e8aa1030",
+            "modality": "SEG",
+            "description": "Review & Annotation Segmentations by Philippe Michelon | Feb-18.",
+            "series_number": "2000",
+            "series_uid": "1.2.840.113619.2.379.139711770624572.17714304411780000",
+            "instances": 1
+          }
+        ]
+      },
+      {
+        "orthanc_id": "6bbd0293-dfa2f98c-666e9046-1a6be4ce-e0c382a1",
+        "accession": "10969511",
+        "description": "TC TÒRAX, TC ABDOMEN",
+        "date": "20230614",
+        "study_uid": "1.2.840.113654.2.70.1.101422667828128112132853437762986515212",
+        "series": [
+          {
+            "orthanc_id": "c3b88fa9-d3e0d893-a162e1fb-0f9e99e4-bb263bbc",
+            "modality": "CT",
+            "description": "Scouts CUERPO",
+            "series_number": "1",
+            "series_uid": "1.2.840.113654.2.70.1.128687572946163376580976819306736444577",
+            "instances": 2
+          },
+          {
+            "orthanc_id": "e98e47e8-8fc96f8c-28a7cfe6-0ef14a79-3e8e0033",
+            "modality": "CT",
+            "description": "CEV torax",
+            "series_number": "2",
+            "series_uid": "1.2.840.113654.2.70.1.306389454009802957008553781342436872898",
+            "instances": 89
+          },
+          {
+            "orthanc_id": "78eb93b7-a6114865-c8aa59b9-dd2a750e-9ada1b5a",
+            "modality": "CT",
+            "description": "CEV abdomen",
+            "series_number": "3",
+            "series_uid": "1.2.840.113654.2.70.1.123729924228240839010912504130801766034",
+            "instances": 63
+          },
+          {
+            "orthanc_id": "24ec69ee-837929d0-8e5f258c-e519eb84-6ac1fa8b",
+            "modality": "CT",
+            "description": "lung",
+            "series_number": "4",
+            "series_uid": "1.2.840.113654.2.70.1.269146982134575688785171678025154255446",
+            "instances": 53
+          },
+          {
+            "orthanc_id": "dc6cbe04-d6313e08-de6fc71e-c30a5d30-a8d722de",
+            "modality": "CT",
+            "description": "SAG COLUMNA 3mm",
+            "series_number": "601",
+            "series_uid": "1.2.840.113654.2.70.1.212226719812113385909381781128762212194",
+            "instances": 37
+          },
+          {
+            "orthanc_id": "8913c34e-f0a726de-044f30e7-d7d01ca0-3e0d25f8",
+            "modality": "SR",
+            "description": "Review & Annotation SR by Philippe Michelon | Feb-18-2026 16:59.",
+            "series_number": "1000",
+            "series_uid": "1.2.840.113619.2.379.246413820423206.17714302861710000",
+            "instances": 1
+          },
+          {
+            "orthanc_id": "c78ef0f5-1c07c0b5-ab4e6028-7430cfad-21eb0e57",
+            "modality": "SEG",
+            "description": "Review & Annotation Segmentations by Philippe Michelon | Feb-18.",
+            "series_number": "2000",
+            "series_uid": "1.2.840.113619.2.379.917040554317720.17714302853070000",
+            "instances": 1
+          }
+        ]
+      },
+      {
+        "orthanc_id": "81fe4fc9-3588c031-b0264b05-453f5262-5b3bbae0",
+        "accession": "12995507",
+        "description": "TC TÓRAX, TC ABDOMEN",
+        "date": "20230905",
+        "study_uid": "1.2.840.113654.2.70.1.151936936661042820271578861646367008741",
+        "series": [
+          {
+            "orthanc_id": "8e800c26-df224f3e-2bc0b537-6b48e211-93be6961",
+            "modality": "CT",
+            "description": "Scouts CUERPO",
+            "series_number": "1",
+            "series_uid": "1.2.840.113654.2.70.1.8706506527442656413315029669338988857",
+            "instances": 2
+          },
+          {
+            "orthanc_id": "a02fe51b-6cc35ff5-c49fa7d4-1ac36028-0b31075e",
+            "modality": "CT",
+            "description": "CEV torax",
+            "series_number": "2",
+            "series_uid": "1.2.840.113654.2.70.1.212847667843679898247899220384170830375",
+            "instances": 28
+          },
+          {
+            "orthanc_id": "3b61db90-c88165a6-dd5cca4a-957e34b5-71506531",
+            "modality": "CT",
+            "description": "lung",
+            "series_number": "4",
+            "series_uid": "1.2.840.113654.2.70.1.274904372802883080920909355817593289923",
+            "instances": 54
+          },
+          {
+            "orthanc_id": "a3a219e3-9db773f5-34d82406-595a1a49-e8369ad1",
+            "modality": "CT",
+            "description": "SAG COLUMNA 3mm",
+            "series_number": "601",
+            "series_uid": "1.2.840.113654.2.70.1.239466852551421064759358672588652572412",
+            "instances": 37
+          },
+          {
+            "orthanc_id": "74efccac-e3c5a76c-f63aa569-cc34755a-578c2b68",
+            "modality": "SR",
+            "description": "Review & Annotation SR by Philippe Michelon | Feb-18-2026 17:08.",
+            "series_number": "1000",
+            "series_uid": "1.2.840.113619.2.379.190044280673661.17714307750610000",
+            "instances": 1
+          },
+          {
+            "orthanc_id": "14cf793c-3b18c360-86929246-3f219013-30785dff",
+            "modality": "SEG",
+            "description": "Review & Annotation Segmentations by Philippe Michelon | Feb-18.",
+            "series_number": "2000",
+            "series_uid": "1.2.840.113619.2.379.234712370329135.17714307741830000",
+            "instances": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "orthanc_id": "5091f46b-f023737c-9c82ab2c-4b9428e2-1e791d2e",
+    "patient_id": "136F50A1",
+    "patient_name": "136F50A1",
+    "sex": "F",
+    "birth_date": "",
+    "studies": [
+      {
+        "orthanc_id": "287a55f4-ddb01806-5712b60d-6d642fa0-2a83cad2",
+        "accession": "97256989",
+        "description": "TC TÒRAX, TC ABDOMEN, TC PELVIS",
+        "date": "20230522",
+        "study_uid": "1.2.840.113654.2.70.1.109912281172855842505475809406836828352",
+        "series": [
+          {
+            "orthanc_id": "279feb93-cb90bd3d-007add02-ad00c8d1-b67d3d82",
+            "modality": "CT",
+            "description": "Scouts CUERPO",
+            "series_number": "1",
+            "series_uid": "1.2.840.113654.2.70.1.26245966882601171988542356653811130402",
+            "instances": 2
+          },
+          {
+            "orthanc_id": "9b0baf49-1a1c9408-47c7c188-215df1c7-a7eaf161",
+            "modality": "CT",
+            "description": "CEV torax",
+            "series_number": "2",
+            "series_uid": "1.2.840.113654.2.70.1.25096435682011979396437414569008583984",
+            "instances": 92
+          },
+          {
+            "orthanc_id": "a60b5bf2-e5a4b74f-5cae76eb-f8e9c74a-8bc06352",
+            "modality": "CT",
+            "description": "CEV abdomen",
+            "series_number": "3",
+            "series_uid": "1.2.840.113654.2.70.1.15687657062126959351703949685766647449",
+            "instances": 94
+          },
+          {
+            "orthanc_id": "92437df6-69608f7c-08184242-66f6c9e2-8594d0f5",
+            "modality": "CT",
+            "description": "lung",
+            "series_number": "4",
+            "series_uid": "1.2.840.113654.2.70.1.130602040261854488949125773828503439940",
+            "instances": 62
+          },
+          {
+            "orthanc_id": "bc50f42c-6d2d5ffa-473be987-d1117033-07c9def2",
+            "modality": "CT",
+            "description": "SAG COLUMNA 3mm",
+            "series_number": "601",
+            "series_uid": "1.2.840.113654.2.70.1.174564870468881642112984994818312914119",
+            "instances": 37
+          },
+          {
+            "orthanc_id": "955ac5ce-721283f7-8b9e00a5-6d8b4111-83b8d6fb",
+            "modality": "SR",
+            "description": "Review & Annotation SR by Philippe Michelon | Feb-12-2026 19:13.",
+            "series_number": "1000",
+            "series_uid": "1.2.840.113619.2.379.706846551687750.17709199167440000",
+            "instances": 1
+          },
+          {
+            "orthanc_id": "155dae70-36c5a02a-f0a4fd6e-d4f07a44-d2cab3e6",
+            "modality": "SEG",
+            "description": "Review & Annotation Segmentations by Philippe Michelon | Feb-12.",
+            "series_number": "2000",
+            "series_uid": "1.2.840.113619.2.379.204387007948374.17709199160010000",
+            "instances": 1
+          }
+        ]
+      },
+      {
+        "orthanc_id": "3dd6b927-1c9d9a0c-415b30af-09417310-e61ea6df",
+        "accession": "45070113",
+        "description": "TC TÒRAX, TC ABDOMEN, TC PELVIS",
+        "date": "20230128",
+        "study_uid": "1.2.840.113654.2.70.1.205705058904675758706845662830597097475",
+        "series": [
+          {
+            "orthanc_id": "06f2f83e-1a9423be-2d86b0fe-810e539c-b8eea49d",
+            "modality": "CT",
+            "description": "Scouts CUERPO",
+            "series_number": "1",
+            "series_uid": "1.2.840.113654.2.70.1.89776243616050704242246435557870223137",
+            "instances": 2
+          },
+          {
+            "orthanc_id": "21039152-ab530c54-8e61e0c3-25e97bc3-ec336014",
+            "modality": "CT",
+            "description": "CEV torax",
+            "series_number": "2",
+            "series_uid": "1.2.840.113654.2.70.1.179237530511682803625080591449006004794",
+            "instances": 94
+          },
+          {
+            "orthanc_id": "59e640ad-8aaae776-0012d45a-71dc188f-597b8947",
+            "modality": "CT",
+            "description": "CEV abdomen",
+            "series_number": "3",
+            "series_uid": "1.2.840.113654.2.70.1.237435349787127872312204675473286775965",
+            "instances": 93
+          },
+          {
+            "orthanc_id": "a66bfdfc-a43f712e-1cb6c436-9d9d09c6-5599a521",
+            "modality": "CT",
+            "description": "lung",
+            "series_number": "4",
+            "series_uid": "1.2.840.113654.2.70.1.165760876439044488154240653758286955794",
+            "instances": 59
+          },
+          {
+            "orthanc_id": "e1abce20-1e670ec9-0e407d1a-2a24114f-7a18d53e",
+            "modality": "CT",
+            "description": "SAG COLUMNA 3mm",
+            "series_number": "601",
+            "series_uid": "1.2.840.113654.2.70.1.295961566823359015540890057538890099796",
+            "instances": 37
+          },
+          {
+            "orthanc_id": "554b0a19-ee16ec9d-818acc1a-6982f4e9-b4a56fc1",
+            "modality": "SR",
+            "description": "Review & Annotation SR by Philippe Michelon | Feb-12-2026 19:21.",
+            "series_number": "1000",
+            "series_uid": "1.2.840.113619.2.379.969303410964140.17709204070830000",
+            "instances": 1
+          },
+          {
+            "orthanc_id": "b1e48df0-e46e5c70-70f189e9-1b2026c1-73d26a77",
+            "modality": "SEG",
+            "description": "Review & Annotation Segmentations by Philippe Michelon | Feb-12.",
+            "series_number": "2000",
+            "series_uid": "1.2.840.113619.2.379.184116795972746.17709204060280000",
+            "instances": 1
+          }
+        ]
+      },
+      {
+        "orthanc_id": "44df2492-f8e28f9c-7b002528-8ddd5122-a26946ca",
+        "accession": "20890776",
+        "description": "TC TÓRAX, TC ABDOMEN, TC PELVIS",
+        "date": "20230718",
+        "study_uid": "1.2.840.113654.2.70.1.204290324946645712627754279315925711008",
+        "series": [
+          {
+            "orthanc_id": "afe2fa30-8539f100-103633bf-cf802f0d-0ebbe43e",
+            "modality": "CT",
+            "description": "Scouts CUERPO",
+            "series_number": "1",
+            "series_uid": "1.2.840.113654.2.70.1.276509645007932028224127606372804182675",
+            "instances": 2
+          },
+          {
+            "orthanc_id": "35217da9-3056bb81-14436f92-31337a9c-3bd02b53",
+            "modality": "CT",
+            "description": "CEV torax",
+            "series_number": "2",
+            "series_uid": "1.2.840.113654.2.70.1.9044936456259782559544390049428688846",
+            "instances": 97
+          },
+          {
+            "orthanc_id": "93bb83de-d1c44ae4-ced4ad49-04d09e4b-a1c89f03",
+            "modality": "CT",
+            "description": "CEV abdomen",
+            "series_number": "3",
+            "series_uid": "1.2.840.113654.2.70.1.484229671201916026917264559620145289",
+            "instances": 99
+          },
+          {
+            "orthanc_id": "c9127de4-1ca05fda-d57d43ae-71af4aab-c69407b3",
+            "modality": "CT",
+            "description": "lung",
+            "series_number": "4",
+            "series_uid": "1.2.840.113654.2.70.1.281627108458298416882776532247895654636",
+            "instances": 61
+          },
+          {
+            "orthanc_id": "25714654-0818f650-8f4948cb-485a6d24-9cd21fc3",
+            "modality": "CT",
+            "description": "SAG COLUMNA 3mm",
+            "series_number": "601",
+            "series_uid": "1.2.840.113654.2.70.1.247848387286357004477187305110576666911",
+            "instances": 37
+          },
+          {
+            "orthanc_id": "d1ae3a95-9effc7d1-e032b827-a29ce164-bd744631",
+            "modality": "SR",
+            "description": "Review & Annotation SR by Philippe Michelon | Feb-12-2026 19:09.",
+            "series_number": "1000",
+            "series_uid": "1.2.840.113619.2.379.188139797073144.17709196915760000",
+            "instances": 1
+          },
+          {
+            "orthanc_id": "2610004c-de24bef2-17bb4118-dbfa6366-7f70c117",
+            "modality": "SEG",
+            "description": "Review & Annotation Segmentations by Philippe Michelon | Feb-12.",
+            "series_number": "2000",
+            "series_uid": "1.2.840.113619.2.379.136316028749342.17709196907700000",
+            "instances": 1
+          }
+        ]
+      },
+      {
+        "orthanc_id": "4ff39551-37f323fd-84850e46-97eb5c04-0ea6eece",
+        "accession": "17790114",
+        "description": "TC TÓRAX, TC ABDOMEN, TC PELVIS",
+        "date": "20230808",
+        "study_uid": "1.2.840.113654.2.70.1.303661016236759687038855577614997558412",
+        "series": [
+          {
+            "orthanc_id": "64f95d60-60676ad7-d90ad96e-7427c828-e49e7a6a",
+            "modality": "CT",
+            "description": "Scouts CUERPO",
+            "series_number": "1",
+            "series_uid": "1.2.840.113654.2.70.1.11065167859990888470741110195311359613",
+            "instances": 2
+          },
+          {
+            "orthanc_id": "2c281ed6-83a69b3b-231e4948-c3dbe099-ef1aa03e",
+            "modality": "CT",
+            "description": "CEV torax",
+            "series_number": "2",
+            "series_uid": "1.2.840.113654.2.70.1.31006181992830300895091819844812817877",
+            "instances": 93
+          },
+          {
+            "orthanc_id": "19b633a8-0b42d86a-ef382549-ccf3afb0-77271693",
+            "modality": "CT",
+            "description": "CEV abdomen",
+            "series_number": "3",
+            "series_uid": "1.2.840.113654.2.70.1.176548191040360474207719814113300940477",
+            "instances": 97
+          },
+          {
+            "orthanc_id": "1b8a074c-6e05275c-a6f74c31-f53e92d9-20b9ad58",
+            "modality": "CT",
+            "description": "lung",
+            "series_number": "4",
+            "series_uid": "1.2.840.113654.2.70.1.46511924935119649569923491119045801198",
+            "instances": 59
+          },
+          {
+            "orthanc_id": "ef82ef07-394ef32b-a5bc4966-8ba2605c-032c90f3",
+            "modality": "CT",
+            "description": "SAG COLUMNA 3mm",
+            "series_number": "601",
+            "series_uid": "1.2.840.113654.2.70.1.197388693281273838736050088184565449901",
+            "instances": 37
+          },
+          {
+            "orthanc_id": "36db8be1-daf11130-de4dfeef-c546534e-3de8181d",
+            "modality": "SR",
+            "description": "Review & Annotation SR by Philippe Michelon | Feb-12-2026 19:07.",
+            "series_number": "1000",
+            "series_uid": "1.2.840.113619.2.379.167615290770430.17709195504000000",
+            "instances": 1
+          },
+          {
+            "orthanc_id": "d1478fc2-286e5455-3263252e-be31e862-23d1bf9c",
+            "modality": "SEG",
+            "description": "Review & Annotation Segmentations by Philippe Michelon | Feb-12.",
+            "series_number": "2000",
+            "series_uid": "1.2.840.113619.2.379.182777048728130.17709195496490000",
+            "instances": 1
+          }
+        ]
+      },
+      {
+        "orthanc_id": "967865f9-25b9c436-cfb81ac5-3efbaab2-ccf4dae0",
+        "accession": "10492106",
+        "description": "TC TÒRAX, TC ABDOMEN, TC PELVIS",
+        "date": "20230823",
+        "study_uid": "1.2.840.113654.2.70.1.71142520746138942176493611587209800938",
+        "series": [
+          {
+            "orthanc_id": "c7136eb7-df894aff-3254b01b-77c500eb-8a5851ad",
+            "modality": "CT",
+            "description": "Scouts CUERPO",
+            "series_number": "1",
+            "series_uid": "1.2.840.113654.2.70.1.305204664467227100321254243038831602828",
+            "instances": 2
+          },
+          {
+            "orthanc_id": "2cad1195-503a8f91-ece16d38-4cf75ea5-131ff800",
+            "modality": "CT",
+            "description": "CEV torax",
+            "series_number": "2",
+            "series_uid": "1.2.840.113654.2.70.1.321660327753674499840912561255906362652",
+            "instances": 93
+          },
+          {
+            "orthanc_id": "cf458a67-f47e86d7-beae0295-1fd281f0-ed0498ef",
+            "modality": "CT",
+            "description": "CEV abdomen",
+            "series_number": "3",
+            "series_uid": "1.2.840.113654.2.70.1.308832571909044729628988897642178131507",
+            "instances": 98
+          },
+          {
+            "orthanc_id": "091d9b02-bd366117-08461957-3907794d-094181bd",
+            "modality": "CT",
+            "description": "lung",
+            "series_number": "4",
+            "series_uid": "1.2.840.113654.2.70.1.199512663915705330764610077446267058385",
+            "instances": 241
+          },
+          {
+            "orthanc_id": "909e54cc-37c1ee22-941428a3-1cd9c7b3-0af1f45f",
+            "modality": "CT",
+            "description": "SAG COLUMNA 3mm",
+            "series_number": "601",
+            "series_uid": "1.2.840.113654.2.70.1.111643314644216480397701960997405183297",
+            "instances": 37
+          },
+          {
+            "orthanc_id": "2b5080f1-c9ff6ac0-414b188c-1b31dfbc-b4067928",
+            "modality": "SR",
+            "description": "Review & Annotation SR by Philippe Michelon | Feb-12-2026 19:03.",
+            "series_number": "1000",
+            "series_uid": "1.2.840.113619.2.379.108836469797846.17709193134160000",
+            "instances": 1
+          },
+          {
+            "orthanc_id": "6b2b550a-a75dda8a-e9a012f9-70703c5b-6313ab54",
+            "modality": "SEG",
+            "description": "Review & Annotation Segmentations by Philippe Michelon | Feb-12.",
+            "series_number": "2000",
+            "series_uid": "1.2.840.113619.2.379.247099258141546.17709193126390000",
+            "instances": 1
+          }
+        ]
+      },
+      {
+        "orthanc_id": "db911f92-c109cb09-8f8d6087-c9aa5e71-d849e120",
+        "accession": "29905155",
+        "description": "TC TÓRAX, TC ABDOMEN, TC PELVIS",
+        "date": "20230328",
+        "study_uid": "1.2.840.113654.2.70.1.76245240994037656767995223401774462407",
+        "series": [
+          {
+            "orthanc_id": "36bde7bb-63fd4255-7815e54e-edc6afff-2b15c6dc",
+            "modality": "CT",
+            "description": "CEV torax",
+            "series_number": "2",
+            "series_uid": "1.2.840.113654.2.70.1.279595635682222603581829982823151471062",
+            "instances": 93
+          },
+          {
+            "orthanc_id": "9632c419-00c84172-235ea2d6-9efa8f2a-17075cf8",
+            "modality": "CT",
+            "description": "CEV abdomen",
+            "series_number": "3",
+            "series_uid": "1.2.840.113654.2.70.1.202270864859579863158796459161008015635",
+            "instances": 94
+          },
+          {
+            "orthanc_id": "75539742-b00bcf73-3cfd031e-f30236e9-68bd0c5a",
+            "modality": "CT",
+            "description": "lung",
+            "series_number": "4",
+            "series_uid": "1.2.840.113654.2.70.1.122659278788114424649249832882781978261",
+            "instances": 58
+          },
+          {
+            "orthanc_id": "dfab244c-1d6f9711-643176cf-8e01a71c-44bdb814",
+            "modality": "CT",
+            "description": "SAG COLUMNA 3mm",
+            "series_number": "601",
+            "series_uid": "1.2.840.113654.2.70.1.89677072161226531296045841607495902529",
+            "instances": 37
+          },
+          {
+            "orthanc_id": "b50f9e1e-353c95d5-6ed35d38-88bf582c-60e48647",
+            "modality": "SR",
+            "description": "Review & Annotation SR by Philippe Michelon | Feb-12-2026 19:17.",
+            "series_number": "1000",
+            "series_uid": "1.2.840.113619.2.379.331191538894940.17709201365030000",
+            "instances": 1
+          },
+          {
+            "orthanc_id": "f8bb7f60-6ae3cdc1-dadc28e8-e032b00e-37933245",
+            "modality": "SEG",
+            "description": "Review & Annotation Segmentations by Philippe Michelon | Feb-12.",
+            "series_number": "2000",
+            "series_uid": "1.2.840.113619.2.379.114064858118844.17709201356780000",
+            "instances": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "orthanc_id": "bd2d2b23-342d4c96-f1ff13d7-2924d47f-22089200",
+    "patient_id": "17A76C2A",
+    "patient_name": "17A76C2A",
+    "sex": "F",
+    "birth_date": "",
+    "studies": [
+      {
+        "orthanc_id": "b40811fa-96f7efe4-88298eea-958af184-926381ee",
+        "accession": "26721665",
+        "description": "TC TÒRAX",
+        "date": "20210405",
+        "study_uid": "1.2.840.113654.2.70.1.333333578606125611209251866158241086978",
+        "series": [
+          {
+            "orthanc_id": "dd7ef986-9b24f311-47c6850b-add1e908-914cf8e9",
+            "modality": "CT",
+            "description": "2.5mm Std",
+            "series_number": "2",
+            "series_uid": "1.2.840.113654.2.70.1.134224585729588609613117236950617274892",
+            "instances": 138
+          },
+          {
+            "orthanc_id": "9b0446e2-c3751cf5-f952e55e-a6a37470-578dd873",
+            "modality": "CT",
+            "description": "1.25mm Pulmón",
+            "series_number": "3",
+            "series_uid": "1.2.840.113654.2.70.1.251872505507105532891396442385337654814",
+            "instances": 234
+          },
+          {
+            "orthanc_id": "14aba855-f3272fd5-b59462de-3e8eaebb-958858a7",
+            "modality": "CT",
+            "description": "Coronal 3mm Torax",
+            "series_number": "601",
+            "series_uid": "1.2.840.113654.2.70.1.338227935994959839128936270042691150758",
+            "instances": 94
+          },
+          {
+            "orthanc_id": "24bafdac-587f8934-42ca59c0-612c1895-344e32ae",
+            "modality": "CT",
+            "description": "Sagital 5mm Torax",
+            "series_number": "602",
+            "series_uid": "1.2.840.113654.2.70.1.149383374830648400758857858310414954322",
+            "instances": 69
+          },
+          {
+            "orthanc_id": "ab76b23e-fb9686e3-4c364577-e40ad2d5-9b587c7e",
+            "modality": "SR",
+            "description": "Review & Annotation SR by Philippe Michelon | Feb-12-2026 09:20.",
+            "series_number": "1000",
+            "series_uid": "1.2.840.113619.2.379.101000945727486.17708843262620000",
+            "instances": 1
+          },
+          {
+            "orthanc_id": "39a0e19f-dea7d7fc-1a5244a4-52d575b7-c057dfe7",
+            "modality": "SEG",
+            "description": "Review & Annotation Segmentations by Philippe Michelon | Feb-12.",
+            "series_number": "2000",
+            "series_uid": "1.2.840.113619.2.379.234608781598235.17708843245700000",
+            "instances": 1
+          }
+        ]
+      },
+      {
+        "orthanc_id": "c2f78efd-5cc70ee4-b3288f21-bd8bb6da-b236a3a2",
+        "accession": "98426752",
+        "description": "TC TÒRAX",
+        "date": "20200503",
+        "study_uid": "1.2.840.113654.2.70.1.187581624456830472548418933910955889444",
+        "series": [
+          {
+            "orthanc_id": "af77be66-81057eee-2fa03152-01974511-d946f16f",
+            "modality": "CT",
+            "description": "2.5mm Std",
+            "series_number": "2",
+            "series_uid": "1.2.840.113654.2.70.1.294778677743774233764474324508186792508",
+            "instances": 150
+          },
+          {
+            "orthanc_id": "bd8e8536-427b8661-6c3e03b3-7d1cc98b-806c49df",
+            "modality": "CT",
+            "description": "1.25mm Pulmón",
+            "series_number": "3",
+            "series_uid": "1.2.840.113654.2.70.1.146588603417193456228411170962054851383",
+            "instances": 251
+          },
+          {
+            "orthanc_id": "5d60e6ae-1d920d37-a99488db-fe193901-df1ea285",
+            "modality": "CT",
+            "description": "Coronal 3mm Torax",
+            "series_number": "601",
+            "series_uid": "1.2.840.113654.2.70.1.63359674712697063057990378583787760671",
+            "instances": 94
+          },
+          {
+            "orthanc_id": "3fa340d1-00f500a2-76c7a122-c6233e43-b8ccb30e",
+            "modality": "CT",
+            "description": "Sagital 5mm Torax",
+            "series_number": "602",
+            "series_uid": "1.2.840.113654.2.70.1.42145623304983188101208615941359258389",
+            "instances": 68
+          },
+          {
+            "orthanc_id": "f06116a0-89c4fd0c-6586d894-4cc64a09-e60aef74",
+            "modality": "SR",
+            "description": "Review & Annotation SR by Philippe Michelon | Feb-12-2026 09:14.",
+            "series_number": "1000",
+            "series_uid": "1.2.840.113619.2.379.274001537827577.17708839725940000",
+            "instances": 1
+          },
+          {
+            "orthanc_id": "74180f0e-4fa68177-ba933729-59f17d3f-bbaf7999",
+            "modality": "SEG",
+            "description": "Review & Annotation Segmentations by Philippe Michelon | Feb-12.",
+            "series_number": "2000",
+            "series_uid": "1.2.840.113619.2.379.244763749880640.17708839708670000",
+            "instances": 1
+          }
+        ]
+      }
+    ]
+  }
+]
