@@ -2318,6 +2318,8 @@ dependencies = [
     { name = "pydantic" },
     { name = "pydicom" },
     { name = "pynetdicom" },
+    { name = "python-dotenv" },
+    { name = "requests" },
     { name = "scikit-image" },
     { name = "simpleitk" },
 ]
@@ -2350,6 +2352,8 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "pydicom", specifier = ">=3.0.1" },
     { name = "pynetdicom" },
+    { name = "python-dotenv", specifier = ">=1.0.0" },
+    { name = "requests", specifier = ">=2.32.0" },
     { name = "scikit-image" },
     { name = "simpleitk" },
     { name = "simpleitk", specifier = ">=2.5.3" },

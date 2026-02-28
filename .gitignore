@@ -1,4 +1,6 @@
 __pycache__/
 .venv/
+dcm_seg_nodules-1.0.0-py3-none-any.whl
 .env
 downloads/
+results/
