@@ -288,6 +288,7 @@ def generate_final_report(
     df: pd.DataFrame,
     segmentation_algo_res_path: str,
     patient_id: str,
+    report_accession_number: int,
     use_judge: bool = True,
     output_file: str = None,
 ):
@@ -299,11 +300,14 @@ def generate_final_report(
     # Construire le texte à inclure dans le prompt
     visits_text = ""
     for _, row in patient_visits.iterrows():
-        visits_text += f"Date: {row['StudyDate']} (format : YYYYMMDD)\n"
-        visits_text += f"Clinical information: {row['Clinical information data (Pseudo reports)']}\n"
-        for entry in segmentation_res:
-            if entry["accession_number"] == row["AccessionNumber"]:
-                visits_text += f"Segmentation results: {entry}\n\n"
+        accession_number = row["AccessionNumber"]
+        
+        if validated or report_accession_number == accession_number : 
+            visits_text += f"Date: {row['StudyDate']} (format : YYYYMMDD)\n"
+            visits_text += f"Clinical information: {row['Clinical information data (Pseudo reports)']}\n"
+            for entry in segmentation_res:
+                if entry["accession_number"] == row["AccessionNumber"]:
+                    visits_text += f"Segmentation results: {entry}\n\n"
 
     if use_judge:
         choice = judge_report_structure(patient_id, visits_text)
