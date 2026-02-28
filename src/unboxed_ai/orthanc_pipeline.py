@@ -106,7 +106,7 @@ class Nodule:
     z_max: float
 
 
-def extract_nodules(seg_path: Path, info_text: str | None) -> list[Nodule]:
+def extract_nodules(seg_path: Path, info_text: str | None) -> tuple[list[Nodule], float]:
     """Parse a DICOM SEG file and return centroid + diameter for each nodule."""
     ds = pydicom.dcmread(str(seg_path))
 
@@ -122,10 +122,16 @@ def extract_nodules(seg_path: Path, info_text: str | None) -> list[Nodule]:
                     diameters[num] = parts[1].strip()
 
     if not hasattr(ds, "PerFrameFunctionalGroupsSequence"):
-        return []
+        return [], float("nan")
 
     frames = ds.PerFrameFunctionalGroupsSequence
     pixel_array = ds.pixel_array
+
+    all_z_positions = [
+        float(frame.PlanePositionSequence[0].ImagePositionPatient[2])
+        for frame in frames
+    ]
+    z_ct_max = max(all_z_positions) if all_z_positions else float("nan")
 
     seg_data: dict[int, list[np.ndarray]] = {}
     seg_z: dict[int, list[float]] = {}
@@ -172,7 +178,7 @@ def extract_nodules(seg_path: Path, info_text: str | None) -> list[Nodule]:
                 z_max=round(max(z_vals), 1),
             )
         )
-    return nodules
+    return nodules, z_ct_max
 
 
 # ---------------------------------------------------------------------------
@@ -389,7 +395,7 @@ def run_pipeline(output_dir: Path, report_path: Path) -> None:
         logger.info("  SEG uploadé : %s (status: %s)", uploaded_id, status)
 
         # Extraire les nodules depuis le SEG
-        nodules = extract_nodules(seg_path, info_text)
+        nodules, _ = extract_nodules(seg_path, info_text)
 
         results.append(
             SeriesResult(
