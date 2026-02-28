@@ -19,6 +19,7 @@ class Constants:
     ORTHANC_PASSWORD = os.getenv("ORTHANC_PASSWORD", "unboxed2026")
     MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "")
 
+    REPORTS_PATH = os.getenv("REPORTS_PATH", "assets/reports.xlsx")
     # PostgreSQL / pgvector (use PGVECTOR_CONNECTION to override built URL)
     POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
     POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
