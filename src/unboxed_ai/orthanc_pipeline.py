@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 # Orthanc client (minimal, focused on what the pipeline needs)
 # ---------------------------------------------------------------------------
 
+
 class OrthancClient:
     def __init__(self) -> None:
         self.url = Constants.ORTHANC_URL.rstrip("/")
@@ -53,10 +54,13 @@ class OrthancClient:
 
     def find_series_by_uid(self, series_instance_uid: str) -> list[str]:
         """Return Orthanc internal series IDs matching a DICOM SeriesInstanceUID."""
-        result = self.post("/tools/find", json={
-            "Level": "Series",
-            "Query": {"SeriesInstanceUID": series_instance_uid},
-        })
+        result = self.post(
+            "/tools/find",
+            json={
+                "Level": "Series",
+                "Query": {"SeriesInstanceUID": series_instance_uid},
+            },
+        )
         return result.json()
 
     def get_series_info(self, series_id: str) -> dict:
@@ -78,14 +82,18 @@ class OrthancClient:
 
     def upload_file(self, filepath: Path) -> dict:
         with open(filepath, "rb") as f:
-            r = self.post("/instances", data=f.read(),
-                          headers={"Content-Type": "application/dicom"})
+            r = self.post(
+                "/instances",
+                data=f.read(),
+                headers={"Content-Type": "application/dicom"},
+            )
         return r.json()
 
 
 # ---------------------------------------------------------------------------
 # Nodule extraction from SEG pixel data
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class Nodule:
@@ -131,14 +139,19 @@ def extract_nodules(seg_path: Path, info_text: str | None) -> list[Nodule]:
             continue
 
         if hasattr(frame, "PlaneOrientationSequence"):
-            orientation = [float(v) for v in frame.PlaneOrientationSequence[0].ImageOrientationPatient]
+            orientation = [
+                float(v)
+                for v in frame.PlaneOrientationSequence[0].ImageOrientationPatient
+            ]
             spacing = [float(v) for v in frame.PixelMeasuresSequence[0].PixelSpacing]
             row_dir = np.array(orientation[:3])
             col_dir = np.array(orientation[3:])
             origin = np.array(pos)
             ys, xs = np.where(mask)
-            coords = [origin + x * spacing[1] * row_dir + y * spacing[0] * col_dir
-                      for x, y in zip(xs, ys)]
+            coords = [
+                origin + x * spacing[1] * row_dir + y * spacing[0] * col_dir
+                for x, y in zip(xs, ys)
+            ]
             seg_data.setdefault(seg_num, []).extend(coords)
 
         seg_z.setdefault(seg_num, []).append(pos[2])
@@ -148,21 +161,24 @@ def extract_nodules(seg_path: Path, info_text: str | None) -> list[Nodule]:
         arr = np.array(seg_data[seg_num])
         centroid = arr.mean(axis=0)
         z_vals = seg_z[seg_num]
-        nodules.append(Nodule(
-            number=seg_num,
-            diameter=diameters.get(seg_num, "N/A"),
-            x=round(float(centroid[0]), 1),
-            y=round(float(centroid[1]), 1),
-            z=round(float(centroid[2]), 1),
-            z_min=round(min(z_vals), 1),
-            z_max=round(max(z_vals), 1),
-        ))
+        nodules.append(
+            Nodule(
+                number=seg_num,
+                diameter=diameters.get(seg_num, "N/A"),
+                x=round(float(centroid[0]), 1),
+                y=round(float(centroid[1]), 1),
+                z=round(float(centroid[2]), 1),
+                z_min=round(min(z_vals), 1),
+                z_max=round(max(z_vals), 1),
+            )
+        )
     return nodules
 
 
 # ---------------------------------------------------------------------------
 # Report generation
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class SeriesResult:
@@ -298,6 +314,7 @@ def markdown_to_html(md: str, title: str = "Rapport nodules") -> str:
 # Main pipeline
 # ---------------------------------------------------------------------------
 
+
 def run_pipeline(output_dir: Path, report_path: Path) -> None:
     client = OrthancClient()
 
@@ -321,7 +338,10 @@ def run_pipeline(output_dir: Path, report_path: Path) -> None:
             matched.append((series_uid, oid))
             logger.info("Match : UID ...%s → Orthanc %s", series_uid[-16:], oid[:8])
 
-    logger.info("%d série(s) à traiter (présentes dans Orthanc ET dans le registre)", len(matched))
+    logger.info(
+        "%d série(s) à traiter (présentes dans Orthanc ET dans le registre)",
+        len(matched),
+    )
 
     if not matched:
         logger.warning("Aucune série commune entre Orthanc et le registre.")
@@ -342,7 +362,9 @@ def run_pipeline(output_dir: Path, report_path: Path) -> None:
         accession = study_tags.get("AccessionNumber", "")
 
         patient_info = client.get_patient_info(study_info["ParentPatient"])
-        patient_id = patient_info.get("MainDicomTags", {}).get("PatientID", orthanc_series_id[:8])
+        patient_id = patient_info.get("MainDicomTags", {}).get(
+            "PatientID", orthanc_series_id[:8]
+        )
 
         logger.info("Traitement : patient=%s | %s", patient_id, series_desc)
 
@@ -369,16 +391,18 @@ def run_pipeline(output_dir: Path, report_path: Path) -> None:
         # Extraire les nodules depuis le SEG
         nodules = extract_nodules(seg_path, info_text)
 
-        results.append(SeriesResult(
-            patient_id=patient_id,
-            study_description=study_desc,
-            accession_number=accession,
-            series_description=series_desc,
-            orthanc_series_id=orthanc_series_id,
-            uploaded_instance_id=uploaded_id,
-            nodules=nodules,
-            info_text=info_text or "",
-        ))
+        results.append(
+            SeriesResult(
+                patient_id=patient_id,
+                study_description=study_desc,
+                accession_number=accession,
+                series_description=series_desc,
+                orthanc_series_id=orthanc_series_id,
+                uploaded_instance_id=uploaded_id,
+                nodules=nodules,
+                info_text=info_text or "",
+            )
+        )
 
     # --- Étape 4 : générer le rapport --------------------------------------
     date_str = datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -395,8 +419,16 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         description="Extrait les SEG depuis le registre bundlé, les uploade dans Orthanc et génère un rapport HTML."
     )
-    parser.add_argument("--output", default="results", help="Dossier de sortie pour les SEG (défaut: results/)")
-    parser.add_argument("--report", default="results/rapport.html", help="Chemin du rapport HTML (défaut: results/rapport.html)")
+    parser.add_argument(
+        "--output",
+        default="results",
+        help="Dossier de sortie pour les SEG (défaut: results/)",
+    )
+    parser.add_argument(
+        "--report",
+        default="results/rapport.html",
+        help="Chemin du rapport HTML (défaut: results/rapport.html)",
+    )
     args = parser.parse_args(argv)
 
     run_pipeline(Path(args.output), Path(args.report))

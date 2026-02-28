@@ -29,7 +29,9 @@ client = Mistral(api_key=API_KEY)
 
 ORTHANC = "https://orthanc.unboxed-2026.ovh"
 AUTH = ("unboxed", "unboxed2026")
-def fetch_studies_from_orthanc() :
+
+
+def fetch_studies_from_orthanc():
     studies_ids = requests.get(f"{ORTHANC}/studies", auth=AUTH, timeout=5).json()
     print(f"  📊 {len(studies_ids)} étude(s) DICOM dans Orthanc\n")
 
@@ -42,18 +44,21 @@ def fetch_studies_from_orthanc() :
         for sid in studies_ids:
             info = requests.get(f"{ORTHANC}/studies/{sid}", auth=AUTH).json()
             t = info.get("MainDicomTags", {})
-            rows.append({
-                "ID"          : sid[:12] + "…",
-                "PatientID"     : t.get("PatientID", "-"),
-                "StudyDescription" : t.get("StudyDescription", "-"),
-                "StudyDate"        : t.get("StudyDate", "-"),
-                "ModalitiesInStudy"    : t.get("ModalitiesInStudy", "-"),
-                "AccessionNumber" : t.get("AccessionNumber", "-"),
-            })
+            rows.append(
+                {
+                    "ID": sid[:12] + "…",
+                    "PatientID": t.get("PatientID", "-"),
+                    "StudyDescription": t.get("StudyDescription", "-"),
+                    "StudyDate": t.get("StudyDate", "-"),
+                    "ModalitiesInStudy": t.get("ModalitiesInStudy", "-"),
+                    "AccessionNumber": t.get("AccessionNumber", "-"),
+                }
+            )
             print(sid, t.get("PatientID", "-"))
         df = pd.DataFrame(rows)
-        return(df)
-    
+        return df
+
+
 # ---------------------------------------------------------------------------
 # LLM judge: LUNGRAD vs RECIST report structure (structured output)
 # ---------------------------------------------------------------------------
@@ -98,7 +103,9 @@ Return your decision as JSON with:
     parsed = response.choices[0].message.parsed
     if parsed is None:
         # Fallback if parse failed: default to lungrad
-        return ReportStructureChoice(report_structure="lungrad", reasoning="Parse failed; defaulting to LUNGRAD.")
+        return ReportStructureChoice(
+            report_structure="lungrad", reasoning="Parse failed; defaulting to LUNGRAD."
+        )
     return parsed
 
 
@@ -144,8 +151,7 @@ def generate_response(prompt: str) -> str:
     Generates a response from the Mistral API based on the given prompt.
     """
     response = client.chat.complete(
-        model="mistral-large-latest",
-        messages=[{"role": "user", "content": prompt}]
+        model="mistral-large-latest", messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content
 
@@ -161,21 +167,28 @@ def excel_to_df(file_path: str) -> pd.DataFrame:
 
 def filter_by_patient(df: pd.DataFrame, patient_id) -> pd.DataFrame:
     """Return rows where the `PatientID` column equals `patient_id`."""
-    if 'PatientID' not in df.columns:
+    if "PatientID" not in df.columns:
         raise KeyError("No 'PatientID' column in dataframe")
-    return df[df['PatientID'] == patient_id]
+    return df[df["PatientID"] == patient_id]
 
 
 def iterate_accession_numbers(df: pd.DataFrame, patient_id=None):
     """Yield unique `AccessionNumber` values; if `patient_id` provided, filter first."""
     if patient_id is not None:
         df = filter_by_patient(df, patient_id)
-    if 'AccessionNumber' not in df.columns:
+    if "AccessionNumber" not in df.columns:
         raise KeyError("No 'AccessionNumber' column in dataframe")
-    for acc in df['AccessionNumber'].dropna().unique():
+    for acc in df["AccessionNumber"].dropna().unique():
         yield acc
 
-def merge_on_accession(excel_df: pd.DataFrame, orthanc_df: pd.DataFrame, excel_col: str = 'AccessionNumber', orthanc_col: str = 'AccessionNumber', how: str = 'inner') -> pd.DataFrame:
+
+def merge_on_accession(
+    excel_df: pd.DataFrame,
+    orthanc_df: pd.DataFrame,
+    excel_col: str = "AccessionNumber",
+    orthanc_col: str = "AccessionNumber",
+    how: str = "inner",
+) -> pd.DataFrame:
     """Merge the Excel and Orthanc DataFrames on accession number.
 
     Returns the merged DataFrame (columns suffixed with `_excel` and `_orthanc` when needed).
@@ -198,7 +211,13 @@ def merge_on_accession(excel_df: pd.DataFrame, orthanc_df: pd.DataFrame, excel_c
     left = left[left[excel_col].notna() & (left[excel_col] != "")]
     right = right[right[orthanc_col].notna() & (right[orthanc_col] != "")]
 
-    merged = left.merge(right, left_on=excel_col, right_on=orthanc_col, how=how, suffixes=("_excel", "_orthanc"))
+    merged = left.merge(
+        right,
+        left_on=excel_col,
+        right_on=orthanc_col,
+        how=how,
+        suffixes=("_excel", "_orthanc"),
+    )
     return merged
 
 
@@ -235,15 +254,24 @@ def generate_report_on_lungs_only(
         print(f"Response saved to {output_file}")
     return response
 
+
 if __name__ == "__main__":
     df = excel_to_df(Constants.REPORTS_PATH)
     orth_df = fetch_studies_from_orthanc()
     merged = merge_on_accession(df, orth_df)
 
     def chat_fn(message, history):
-        rapport = generate_report_on_lungs_only(merged, message, output_file="history_report.txt")
+        rapport = generate_report_on_lungs_only(
+            merged, message, output_file="history_report.txt"
+        )
         return rapport
 
     import gradio as gr
-    demo = gr.ChatInterface(fn=chat_fn, title="Report on patient history", fill_height=True, save_history=True)
+
+    demo = gr.ChatInterface(
+        fn=chat_fn,
+        title="Report on patient history",
+        fill_height=True,
+        save_history=True,
+    )
     demo.launch()

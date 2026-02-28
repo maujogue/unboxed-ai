@@ -39,7 +39,9 @@ for sid in series_list:
 print(f"\nSEG : {seg_series_id}")
 
 # ---- 3. Télécharger le SEG ----
-seg_instances = requests.get(f"{ORTHANC_URL}/series/{seg_series_id}/instances", auth=AUTH).json()
+seg_instances = requests.get(
+    f"{ORTHANC_URL}/series/{seg_series_id}/instances", auth=AUTH
+).json()
 seg_instance_id = seg_instances[0]["ID"]
 print(f"Instance SEG : {seg_instance_id}")
 
@@ -104,7 +106,9 @@ for ct_norm, seg_mask, frame_i in results:
     ax.imshow(ct_norm, cmap="gray")
     ax.imshow(np.ma.masked_where(seg_mask == 0, seg_mask), cmap="Reds", alpha=0.5)
     ax.axis("off")
-    fig.savefig(f"{output_dir}/frame_{frame_i + 1:03d}.png", dpi=150, bbox_inches="tight")
+    fig.savefig(
+        f"{output_dir}/frame_{frame_i + 1:03d}.png", dpi=150, bbox_inches="tight"
+    )
     plt.close(fig)
     print(f"Exporté : frame_{frame_i + 1:03d}.png")
 

@@ -22,6 +22,7 @@ from io import BytesIO
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -43,6 +44,7 @@ AUTH = (ORTHANC_USER, ORTHANC_PASS) if ORTHANC_USER else None
 # Orthanc helpers
 # ---------------------------------------------------------------------------
 
+
 def _get(path: str, **kwargs) -> requests.Response:
     r = requests.get(f"{ORTHANC_URL}{path}", auth=AUTH, **kwargs)
     r.raise_for_status()
@@ -56,10 +58,13 @@ def _post(path: str, **kwargs) -> requests.Response:
 
 
 def find_series_by_uid(series_uid: str) -> list[str]:
-    return _post("/tools/find", json={
-        "Level": "Series",
-        "Query": {"SeriesInstanceUID": series_uid},
-    }).json()
+    return _post(
+        "/tools/find",
+        json={
+            "Level": "Series",
+            "Query": {"SeriesInstanceUID": series_uid},
+        },
+    ).json()
 
 
 def get_series_instances(series_id: str) -> list[dict]:
@@ -78,6 +83,7 @@ def download_ct_slice(instance_id: str) -> pydicom.Dataset:
 # ---------------------------------------------------------------------------
 # Parsing helpers
 # ---------------------------------------------------------------------------
+
 
 def parse_findings(info_text: str | None) -> dict[int, dict]:
     """Parse all Finding lines from the registry info text.
@@ -100,8 +106,8 @@ def parse_findings(info_text: str | None) -> dict[int, dict]:
         except ValueError:
             continue
         detail = parts[1].strip()
-        img_match = re.search(r'\(Image\s+(\d+)\)', detail)
-        diam_match = re.search(r'([\d.]+\s*mm)', detail, re.IGNORECASE)
+        img_match = re.search(r"\(Image\s+(\d+)\)", detail)
+        diam_match = re.search(r"([\d.]+\s*mm)", detail, re.IGNORECASE)
         result[num] = {
             "diameter": diam_match.group(1) if diam_match else "N/A",
             "image_number": int(img_match.group(1)) if img_match else None,
@@ -112,6 +118,7 @@ def parse_findings(info_text: str | None) -> dict[int, dict]:
 # ---------------------------------------------------------------------------
 # CT index building
 # ---------------------------------------------------------------------------
+
 
 def build_ct_index(ct_series_id: str) -> tuple[dict[str, str], dict[int, str]]:
     """Index CT instances from an Orthanc series.
@@ -144,10 +151,13 @@ def build_ct_index(ct_series_id: str) -> tuple[dict[str, str], dict[int, str]]:
 # SEG index building
 # ---------------------------------------------------------------------------
 
-def build_seg_index(seg_dcm: pydicom.Dataset) -> tuple[
-    dict[tuple[int, str], int],   # (seg_num, ref_sop_uid) → frame_idx
+
+def build_seg_index(
+    seg_dcm: pydicom.Dataset,
+) -> tuple[
+    dict[tuple[int, str], int],  # (seg_num, ref_sop_uid) → frame_idx
     dict[int, list[tuple[int, int]]],  # seg_num → [(frame_idx, pixel_count)]
-    np.ndarray,                    # pixel_array (n_frames, H, W)
+    np.ndarray,  # pixel_array (n_frames, H, W)
 ]:
     """Index SEG frames by (segment_number, referenced_CT_uid) and by area."""
     pixel_array = seg_dcm.pixel_array
@@ -181,6 +191,7 @@ def build_seg_index(seg_dcm: pydicom.Dataset) -> tuple[
 # Rendering
 # ---------------------------------------------------------------------------
 
+
 def normalize_ct(pixel_data: np.ndarray, wl: int = -600, ww: int = 1500) -> np.ndarray:
     """Lung windowing + normalize to [0, 1]."""
     low, high = wl - ww // 2, wl + ww // 2
@@ -210,6 +221,7 @@ def save_overlay(
 # ---------------------------------------------------------------------------
 # Per-series processing
 # ---------------------------------------------------------------------------
+
 
 def process_entry(
     ct_series_uid: str,
@@ -256,7 +268,9 @@ def process_entry(
         if image_number is not None:
             target_ct_uid = instnum_to_uid.get(image_number)
             if target_ct_uid is None:
-                print(f"  [WARN] Finding{seg_num}: Image {image_number} not in CT index, falling back to max-area")
+                print(
+                    f"  [WARN] Finding{seg_num}: Image {image_number} not in CT index, falling back to max-area"
+                )
             else:
                 frame_idx = seg_frame_by_key.get((seg_num, target_ct_uid))
 
@@ -296,9 +310,16 @@ def process_entry(
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--output", default="export_nodules", help="Dossier de sortie (défaut: export_nodules/)")
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        "--output",
+        default="export_nodules",
+        help="Dossier de sortie (défaut: export_nodules/)",
+    )
     args = parser.parse_args()
 
     output_dir = Path(args.output)
