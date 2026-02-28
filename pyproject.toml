@@ -39,6 +39,14 @@ dcm-seg-nodules = { path = "dcm_seg_nodules-1.0.0-py3-none-any.whl" }
 
 [dependency-groups]
 dev = [
+    "pytest>=9.0.2",
     "ruff>=0.15.4",
     "ty>=0.0.19",
+]
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:builtin type SwigPyPacked has no __module__ attribute:DeprecationWarning",
+    "ignore:builtin type SwigPyObject has no __module__ attribute:DeprecationWarning",
+    "ignore:builtin type swigvarlink has no __module__ attribute:DeprecationWarning",
 ]
