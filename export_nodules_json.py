@@ -38,7 +38,9 @@ from dcm_seg_nodules import registry as seg_registry
 from src.unboxed_ai.orthanc_pipeline import extract_nodules
 
 _NON_THORACIC_RE = re.compile(r"\b(ABDOMEN|ABDOM|PELVI[S]?)\b", re.IGNORECASE)
-_THORACIC_RE = re.compile(r"\b(THORAX|THOR[AÀÂ]X|T[OÒÓ]RAX|CHEST|PULMON)\b", re.IGNORECASE)
+_THORACIC_RE = re.compile(
+    r"\b(THORAX|THOR[AÀÂ]X|T[OÒÓ]RAX|CHEST|PULMON)\b", re.IGNORECASE
+)
 
 
 def scan_is_thorax_only(study_description: str) -> bool:
@@ -52,10 +54,14 @@ def scan_is_thorax_only(study_description: str) -> bool:
     """
     if not study_description:
         return False
-    return bool(_THORACIC_RE.search(study_description)) and not bool(_NON_THORACIC_RE.search(study_description))
+    return bool(_THORACIC_RE.search(study_description)) and not bool(
+        _NON_THORACIC_RE.search(study_description)
+    )
 
 
-def nodule_is_thoracic(z_min: float, z_ct_max: float, thoracic_depth: float, thorax_only: bool) -> bool:
+def nodule_is_thoracic(
+    z_min: float, z_ct_max: float, thoracic_depth: float, thorax_only: bool
+) -> bool:
     """True si le nodule est dans la zone thoracique.
 
     Pour les scans thorax-seul (thorax_only=True), tous les nodules sont thoraciques.
@@ -70,8 +76,12 @@ def nodule_is_thoracic(z_min: float, z_ct_max: float, thoracic_depth: float, tho
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--output", default="nodules_export.json", help="Fichier JSON de sortie")
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        "--output", default="nodules_export.json", help="Fichier JSON de sortie"
+    )
     parser.add_argument(
         "--thoracic-only",
         action="store_true",
@@ -123,12 +133,18 @@ def main() -> None:
          
         nodules, z_ct_max = extract_nodules(Path(seg_path), info_text)
 
-        z_thoracic_min = None if thorax_only or math.isnan(z_ct_max) else (z_ct_max - args.thoracic_depth)
+        z_thoracic_min = (
+            None
+            if thorax_only or math.isnan(z_ct_max)
+            else (z_ct_max - args.thoracic_depth)
+        )
 
         nodule_dicts = []
         skipped = 0
         for n in nodules:
-            thoracic = nodule_is_thoracic(n.z_min, z_ct_max, args.thoracic_depth, thorax_only)
+            thoracic = nodule_is_thoracic(
+                n.z_min, z_ct_max, args.thoracic_depth, thorax_only
+            )
             if args.thoracic_only and not thoracic:
                 skipped += 1
                 continue
@@ -136,18 +152,22 @@ def main() -> None:
             d["is_thoracic"] = thoracic
             nodule_dicts.append(d)
 
-        export.append({
-            "patient_id": patient_id,
-            "accession_number": accession,
-            "seg_file": str(seg_path),
-            "ct_series_uid": ct_series_uid,
-            "study_description": study_desc,
-            "scan_type": scan_type,
-            "z_ct_max": round(z_ct_max, 1) if not math.isnan(z_ct_max) else None,
-            "z_thoracic_min": round(z_thoracic_min, 1) if z_thoracic_min is not None else None,
-            "nodule_count": len(nodule_dicts),
-            "nodules": nodule_dicts,
-        })
+        export.append(
+            {
+                "patient_id": patient_id,
+                "accession_number": accession,
+                "seg_file": str(seg_path),
+                "ct_series_uid": ct_series_uid,
+                "study_description": study_desc,
+                "scan_type": scan_type,
+                "z_ct_max": round(z_ct_max, 1) if not math.isnan(z_ct_max) else None,
+                "z_thoracic_min": round(z_thoracic_min, 1)
+                if z_thoracic_min is not None
+                else None,
+                "nodule_count": len(nodule_dicts),
+                "nodules": nodule_dicts,
+            }
+        )
 
         msg = f"  Patient {patient_id} | {scan_type} | {len(nodule_dicts)} nodule(s)"
         if skipped:

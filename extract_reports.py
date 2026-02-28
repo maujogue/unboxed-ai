@@ -31,9 +31,9 @@ def format_report(text):
     # Any whitespace + dash + whitespace → newline + "- "
     # This handles both inline " - " bullets and already-newlined "\n- " ones.
     # Compound words like "non-target" are safe because they have no surrounding whitespace.
-    text = re.sub(r'\s+-\s+', '\n- ', text)
+    text = re.sub(r"\s+-\s+", "\n- ", text)
     # Remove extra consecutive blank lines
-    text = re.sub(r'\n{2,}', '\n', text)
+    text = re.sub(r"\n{2,}", "\n", text)
     return text.strip()
 
 
@@ -54,8 +54,14 @@ def parse_report(text):
     if not matches:
         # No section found — put everything in CLINICAL INFORMATION as fallback
         result["CLINICAL INFORMATION"] = text.strip()
-        result["ASSAY"] = "yes" if re.search(r'(?<!\w)ASSAY(?!\w)', text, re.IGNORECASE) else "no"
-        result["NODULE CONTROL"] = "yes" if re.search(r'(?<!\w)NODULE\s+CONTROL(?!\w)', text, re.IGNORECASE) else "no"
+        result["ASSAY"] = (
+            "yes" if re.search(r"(?<!\w)ASSAY(?!\w)", text, re.IGNORECASE) else "no"
+        )
+        result["NODULE CONTROL"] = (
+            "yes"
+            if re.search(r"(?<!\w)NODULE\s+CONTROL(?!\w)", text, re.IGNORECASE)
+            else "no"
+        )
         return result
 
     for i, match in enumerate(matches):
@@ -76,8 +82,14 @@ def parse_report(text):
 
     # Post-processing per section
     # ASSAY and NODULE CONTROL: "yes" if the keyword appears anywhere in the raw text
-    result["ASSAY"] = "yes" if re.search(r'(?<!\w)ASSAY(?!\w)', text, re.IGNORECASE) else "no"
-    result["NODULE CONTROL"] = "yes" if re.search(r'(?<!\w)NODULE\s+CONTROL(?!\w)', text, re.IGNORECASE) else "no"
+    result["ASSAY"] = (
+        "yes" if re.search(r"(?<!\w)ASSAY(?!\w)", text, re.IGNORECASE) else "no"
+    )
+    result["NODULE CONTROL"] = (
+        "yes"
+        if re.search(r"(?<!\w)NODULE\s+CONTROL(?!\w)", text, re.IGNORECASE)
+        else "no"
+    )
     result["REPORT"] = format_report(result["REPORT"])
 
     return result
