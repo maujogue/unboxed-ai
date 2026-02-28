@@ -4,6 +4,7 @@ This project follows these implementation and tooling conventions:
 
 - Use `LangGraph` for graph orchestration and agents.
 - Use `langchain-mistralai` for LLM and embeddings integrations.
+- Use `langfuse` for LLM tracing and observability.
 - Use `pgvector` (via Docker Compose) as the embeddings/vector store backend.
 - Use `uv` for dependency management and command execution.
 - Use `pytest` for tests.

@@ -1,7 +1,9 @@
 import os
 
-from langchain_mistralai import ChatMistralAI
 from dotenv import load_dotenv
+from langchain_mistralai import ChatMistralAI
+
+from unboxed_ai.lib import flush_langfuse, get_langfuse_langchain_callbacks
 
 load_dotenv()
 
@@ -16,7 +18,11 @@ def test_chat_mistralai_simple_invoke() -> None:
         api_key=api_key,
         temperature=0,
     )
-    response = llm.invoke("Reply with exactly: hey!")
+    response = llm.invoke(
+        "Reply with exactly: hey!",
+        config={"callbacks": get_langfuse_langchain_callbacks()},
+    )
+    flush_langfuse()
     print(response.content)
 
 
