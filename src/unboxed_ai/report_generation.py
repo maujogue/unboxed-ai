@@ -107,14 +107,10 @@ Return your decision as JSON with:
 # ---------------------------------------------------------------------------
 
 LUNGRAD_SYSTEM = """You are a senior radiologist assistant.
-Summarize the patient's lung history in chronological order using a LUNGRAD-oriented structure.
-Focus on: lung nodules, size and character, screening context, and nodule follow-up.
-Use clear language; reference relevant images per visit. Highlight nodule evolution and any LUNGRAD-relevant findings."""
+Carry the task asked by the user using a LUNGRAD-oriented structure."""
 
 RECIST_SYSTEM = """You are a senior radiologist assistant.
-Summarize the patient's lung history in chronological order using a RECIST-oriented structure.
-Focus on: target and non-target lesions, sum of diameters, treatment response (CR/PR/SD/PD), and measurable disease.
-Use clear language; reference relevant images per visit. Highlight response trends and RECIST-relevant measurements."""
+Carry the task asked by the user using a RECIST-oriented structure."""
 
 
 def build_report_prompt(
@@ -138,6 +134,34 @@ Return a structured summary in clear language. Include:
 - Referenced images per visit
 - Diagnosis/response trends as appropriate."""
 
+def build_final_report_prompt(
+    patient_id: str,
+    visits_text: str,
+    report_structure: ReportStructureKind,
+) -> str:
+    """Build the main report prompt for the chosen structure (LUNGRAD or RECIST)."""
+    system = LUNGRAD_SYSTEM if report_structure == "lungrad" else RECIST_SYSTEM
+    return f"""{system}
+
+A patient has done several visits and got scanned by a CT scanner.
+For each visit, you are given : 
+1 - The reason of the exam
+2 - The result of the reading by a radiologist
+
+For some of these visits, there are no report about the results of the CT scanner.
+Your goal is to write the missing reports based on the findings of a segmentation algorithm that detected nodules based on CT scanner images.
+
+INSTRUCTIONS : 
+- Focus ONLY on lung findings, their evolution, and reference any relevant images.
+- You MUST keep the same format as the previous reports.
+- You MUST base the report on the findings of the segmentation algorithm.
+- ONLY use the previous reports for the names of the pulmonary name lesions (F1, F2, ... Fn).
+
+PatientID: {patient_id}
+
+Patient history reports:
+
+{visits_text}"""
 
 def generate_response(prompt: str) -> str:
     """
@@ -235,13 +259,47 @@ def generate_report_on_lungs_only(
         print(f"Response saved to {output_file}")
     return response
 
+import json
+def generate_final_report(df: pd.DataFrame, segmentation_algo_res_path: str, patient_id: str, use_judge: bool = True, output_file: str = None):
+    # Filtrer les visites du patient
+    patient_visits = df[df["PatientID_excel"] == patient_id].sort_values(by="StudyDate")
+    with open(segmentation_algo_res_path, "r", encoding="utf-8") as f:
+        segmentation_res = json.load(f)
+        
+    
+    # Construire le texte à inclure dans le prompt
+    visits_text = ""
+    for _, row in patient_visits.iterrows():
+        visits_text += f"Date: {row['StudyDate']} (format : YYYYMMDD)\n"
+        visits_text += f"Clinical information: {row['Clinical information data (Pseudo reports)']}\n"
+        for entry in segmentation_res :
+            if entry["accession_number"] == row["AccessionNumber"] :
+                 visits_text += f"Segmentation results: {entry}\n\n"
+    
+    if use_judge:
+        choice = judge_report_structure(patient_id, visits_text)
+        print(f"  Judge: {choice.report_structure} — {choice.reasoning}")
+        prompt = build_final_report_prompt(patient_id, visits_text, choice.report_structure)
+    else:
+        # Legacy single prompt (no routing)
+        prompt = build_final_report_prompt(patient_id, visits_text, "lungrad")
+    print(prompt)
+    response = generate_response(prompt)
+    # Sauvegarder le prompt si demandé
+    if output_file:
+        with open(output_file, "w", encoding="utf-8") as f:
+            f.write(response)
+        print(f"Response sauvegardée dans {output_file}")
+
+    return response
+
 if __name__ == "__main__":
     df = excel_to_df(Constants.REPORTS_PATH)
     orth_df = fetch_studies_from_orthanc()
     merged = merge_on_accession(df, orth_df)
 
     def chat_fn(message, history):
-        rapport = generate_report_on_lungs_only(merged, message, output_file="history_report.txt")
+        rapport = generate_final_report(merged, Constants.SEGMENTATION_PATH, message, output_file="history_report.txt")
         return rapport
 
     import gradio as gr

@@ -24,6 +24,7 @@ class Constants:
     MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "")
 
     REPORTS_PATH = os.getenv("REPORTS_PATH", "assets/new-reports.ods")
+    SEGMENTATION_PATH = os.getenv("SEGMENTATION_PATH", "nodules_export.json")
     # PostgreSQL / pgvector (use PGVECTOR_CONNECTION to override built URL)
     POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
     POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
