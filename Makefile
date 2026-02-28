@@ -1,4 +1,4 @@
-.PHONY: help install sync test pytest unittest orthank-test lint format typecheck check clean docker-up docker-down docker-logs
+.PHONY: help install sync test pytest unittest orthank-test lint format typecheck check clean docker-up docker-down docker-logs pipeline
 
 help: ## Show available commands
 	@echo "Common commands:"
@@ -12,6 +12,7 @@ help: ## Show available commands
 	@echo "  make docker-up    - Start pgvector Postgres (docker compose up -d)"
 	@echo "  make docker-down  - Stop pgvector Postgres"
 	@echo "  make docker-logs  - Show pgvector container logs"
+	@echo "  make pipeline     - Run SEG extraction pipeline + generate HTML report"
 
 install: ## Install and sync project dependencies
 	uv sync --dev
@@ -43,3 +44,6 @@ docker-down: ## Stop pgvector Postgres
 
 docker-logs: ## Show pgvector container logs
 	docker compose logs -f pgvector
+
+pipeline: ## Extract SEG from bundled registry, upload to Orthanc, generate HTML report
+	uv run orthanc-pipeline --output results/ --report results/rapport.html
