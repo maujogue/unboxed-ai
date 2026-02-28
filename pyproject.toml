@@ -31,6 +31,7 @@ dependencies = [
     "langfuse>=3.14.5",
     "langchain-postgres>=0.0.17",
     "pydantic>=2.12.5",
+    "sqlalchemy>=2.0",
 ]
 
 [project.scripts]
@@ -51,7 +52,17 @@ dev = [
     "ty>=0.0.19",
 ]
 
+[tool.ruff]
+exclude = ["WELCOME.ipynb"]
+
+[tool.ty.src]
+exclude = ["WELCOME.ipynb", "examples/langchain_mistralai_integration_example.py", "tests/test_mistral_call.py"]
+
 [tool.pytest.ini_options]
+addopts = ["-m", "not integration"]
+markers = [
+    "integration: marks tests that require network or external API (deselect with -m 'not integration')",
+]
 filterwarnings = [
     "ignore:builtin type SwigPyPacked has no __module__ attribute:DeprecationWarning",
     "ignore:builtin type SwigPyObject has no __module__ attribute:DeprecationWarning",

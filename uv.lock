@@ -2322,6 +2322,7 @@ dependencies = [
     { name = "requests" },
     { name = "scikit-image" },
     { name = "simpleitk" },
+    { name = "sqlalchemy" },
 ]
 
 [package.dev-dependencies]
@@ -2357,6 +2358,7 @@ requires-dist = [
     { name = "scikit-image" },
     { name = "simpleitk" },
     { name = "simpleitk", specifier = ">=2.5.3" },
+    { name = "sqlalchemy", specifier = ">=2.0" },
 ]
 
 [package.metadata.requires-dev]

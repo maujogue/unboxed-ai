@@ -13,9 +13,9 @@ class OrthancClient:
 
     def __init__(
         self,
-        base_url: str = Constants.DEFAULT_ORTHANC_URL,
-        username: str = Constants.DEFAULT_ORTHANC_USERNAME,
-        password: str = Constants.DEFAULT_ORTHANC_PASSWORD,
+        base_url: str = Constants.ORTHANC_URL,
+        username: str = Constants.ORTHANC_USERNAME,
+        password: str = Constants.ORTHANC_PASSWORD,
         timeout: int = Constants.DEFAULT_TIMEOUT_SECONDS,
     ) -> None:
         self.base_url = base_url.rstrip("/")

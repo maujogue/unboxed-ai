@@ -18,8 +18,21 @@ class Constants:
     ORTHANC_USERNAME = os.getenv("ORTHANC_USERNAME", "unboxed")
     ORTHANC_PASSWORD = os.getenv("ORTHANC_PASSWORD", "unboxed2026")
     MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "")
-    PGVECTOR_CONNECTION = os.getenv(
-        "PGVECTOR_CONNECTION", "postgresql+psycopg://postgres:postgres@localhost:5432/postgres"
+
+    # PostgreSQL / pgvector (use PGVECTOR_CONNECTION to override built URL)
+    POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
+    POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
+    POSTGRES_DB = os.getenv("POSTGRES_DB", "postgres")
+    POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
+    POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "postgres")
+    _pgvector_connection = os.getenv("PGVECTOR_CONNECTION")
+    PGVECTOR_CONNECTION = (
+        _pgvector_connection
+        if _pgvector_connection
+        else f"postgresql+psycopg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+    )
+    PGVECTOR_COLLECTION_NAME = os.getenv(
+        "PGVECTOR_COLLECTION_NAME", DEFAULT_PGVECTOR_COLLECTION_NAME
     )
 
     ORTHANC_INSTANCES_ENDPOINT = f"{ORTHANC_URL.rstrip('/')}/instances"

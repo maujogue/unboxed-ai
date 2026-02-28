@@ -5,10 +5,12 @@ from typing import TYPE_CHECKING
 
 from .Constants import Constants
 from .langfuse_client import get_langfuse_langchain_callbacks
+from .vector_store import VectorStoreService, create_engine_from_constants
 
 if TYPE_CHECKING:
     from langchain_mistralai import ChatMistralAI, MistralAIEmbeddings
     from langfuse.langchain import CallbackHandler
+    from sqlalchemy.engine import Engine
 
 
 class Services:
@@ -36,7 +38,7 @@ class Services:
             )
         return ChatMistralAI(
             model=Constants.DEFAULT_MISTRAL_MODEL,
-            api_key=api_key,
+            api_key=api_key,  # type: ignore[call-arg]
             temperature=Constants.DEFAULT_MISTRAL_TEMPERATURE,
         )
 
@@ -49,12 +51,12 @@ class Services:
             raise RuntimeError(
                 f"{Constants.MISTRAL_API_KEY_ENV} is required to create mistral_embeddings."
             )
-        return MistralAIEmbeddings(api_key=api_key)
+        return MistralAIEmbeddings(api_key=api_key)  # type: ignore[call-arg]
 
     @cached_property
     def pgvector(self):
         try:
-            from langchain_postgres import PGVector  # type: ignore[reportMissingImports]
+            from langchain_postgres import PGVector
         except ImportError as exc:
             raise RuntimeError(
                 "PGVector service requires `langchain-postgres` to be installed."
@@ -62,8 +64,16 @@ class Services:
         return PGVector(
             embeddings=self.mistral_embeddings,
             connection=Constants.PGVECTOR_CONNECTION,
-            collection_name=Constants.DEFAULT_PGVECTOR_COLLECTION_NAME,
+            collection_name=Constants.PGVECTOR_COLLECTION_NAME,
         )
+
+    @cached_property
+    def sqlalchemy_engine(self) -> "Engine":
+        return create_engine_from_constants()
+
+    @cached_property
+    def vector_store(self) -> VectorStoreService:
+        return VectorStoreService(store=self.pgvector, engine=self.sqlalchemy_engine)
 
     @cached_property
     def langfuse_callbacks(self) -> list["CallbackHandler"]:
