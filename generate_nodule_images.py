@@ -1,25 +1,27 @@
 """
 Génère une image fusionnée CT + masque SEG pour la coupe la plus caractéristique
-de chaque nodule (Finding) dans le registre bundlé.
+de chaque nodule validé dans findings_validation.json.
+
+Source des DICOMs : fichiers locaux (Orthanc n'est pas requis).
 
 Stratégie de sélection de la coupe :
-  1. Si le texte du registre contient "(Image X)" pour ce Finding
-     → coupe CT avec InstanceNumber = X dans la série
+  1. Si findings_validation.json contient image_number pour ce Finding
+     → coupe CT avec InstanceNumber = image_number
   2. Sinon → frame SEG dont le masque a la plus grande surface
      (correspond à la coupe au diamètre maximal)
 
 Usage:
     uv run python generate_nodule_images.py
     uv run python generate_nodule_images.py --output export_nodules/
-    uv run python generate_nodule_images.py --accession 26721665  # only this accession
+    uv run python generate_nodule_images.py --accession 31981427
+    uv run python generate_nodule_images.py --dataset /path/to/dataset
 """
 
 from __future__ import annotations
 
 import argparse
-import os
+import json
 import re
-from io import BytesIO
 from pathlib import Path
 
 import matplotlib
@@ -28,124 +30,166 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pydicom
-import requests
-from dotenv import load_dotenv
 
 from dcm_seg_nodules import registry as seg_registry
 
-load_dotenv()
-
-ORTHANC_URL = os.getenv("ORTHANC_URL", "https://orthanc.unboxed-2026.ovh")
-ORTHANC_USER = os.getenv("ORTHANC_USERNAME", "unboxed")
-ORTHANC_PASS = os.getenv("ORTHANC_PASSWORD", "unboxed2026")
-AUTH = (ORTHANC_USER, ORTHANC_PASS) if ORTHANC_USER else None
-
+DATASET_DIR = Path("/home/corentin/Downloads/dataset_backup(1)/dataset")
+FINDINGS_FILE = Path("findings_validation.json")
 
 # ---------------------------------------------------------------------------
-# Orthanc helpers
+# Orthanc helpers (conservés pour référence — désactivés, Orthanc est down)
 # ---------------------------------------------------------------------------
 
-
-def _get(path: str, **kwargs) -> requests.Response:
-    r = requests.get(f"{ORTHANC_URL}{path}", auth=AUTH, **kwargs)
-    r.raise_for_status()
-    return r
-
-
-def _post(path: str, **kwargs) -> requests.Response:
-    r = requests.post(f"{ORTHANC_URL}{path}", auth=AUTH, **kwargs)
-    r.raise_for_status()
-    return r
-
-
-def find_series_by_uid(series_uid: str) -> list[str]:
-    return _post(
-        "/tools/find",
-        json={
-            "Level": "Series",
-            "Query": {"SeriesInstanceUID": series_uid},
-        },
-    ).json()
-
-
-def get_series_instances(series_id: str) -> list[dict]:
-    return _get(f"/series/{series_id}/instances").json()
-
-
-def get_instance_tags(instance_id: str) -> dict:
-    return _get(f"/instances/{instance_id}").json().get("MainDicomTags", {})
-
-
-def download_ct_slice(instance_id: str) -> pydicom.Dataset:
-    r = _get(f"/instances/{instance_id}/file")
-    return pydicom.dcmread(BytesIO(r.content))
-
+# import os
+# import requests
+# from io import BytesIO
+# from dotenv import load_dotenv
+# load_dotenv()
+# ORTHANC_URL = os.getenv("ORTHANC_URL", "https://orthanc.unboxed-2026.ovh")
+# ORTHANC_USER = os.getenv("ORTHANC_USERNAME", "unboxed")
+# ORTHANC_PASS = os.getenv("ORTHANC_PASSWORD", "unboxed2026")
+# AUTH = (ORTHANC_USER, ORTHANC_PASS) if ORTHANC_USER else None
+#
+# def _get(path: str, **kwargs) -> requests.Response:
+#     r = requests.get(f"{ORTHANC_URL}{path}", auth=AUTH, **kwargs)
+#     r.raise_for_status()
+#     return r
+#
+# def _post(path: str, **kwargs) -> requests.Response:
+#     r = requests.post(f"{ORTHANC_URL}{path}", auth=AUTH, **kwargs)
+#     r.raise_for_status()
+#     return r
+#
+# def find_series_by_uid(series_uid: str) -> list[str]:
+#     return _post("/tools/find", json={"Level": "Series", "Query": {"SeriesInstanceUID": series_uid}}).json()
+#
+# def get_series_instances(series_id: str) -> list[dict]:
+#     return _get(f"/series/{series_id}/instances").json()
+#
+# def get_instance_tags(instance_id: str) -> dict:
+#     return _get(f"/instances/{instance_id}").json().get("MainDicomTags", {})
+#
+# def download_ct_slice(instance_id: str) -> pydicom.Dataset:
+#     r = _get(f"/instances/{instance_id}/file")
+#     return pydicom.dcmread(BytesIO(r.content))
 
 # ---------------------------------------------------------------------------
-# Parsing helpers
+# Registry helpers
 # ---------------------------------------------------------------------------
 
 
-def parse_findings(info_text: str | None) -> dict[int, dict]:
-    """Parse all Finding lines from the registry info text.
-
-    Returns {seg_num: {"diameter": "17mm", "image_number": 39 or None}}.
-    Example input: "- Finding1: diameter 17mm (Image 39)."
-    """
-    result: dict[int, dict] = {}
-    if not info_text:
-        return result
-    for line in info_text.splitlines():
-        line = line.strip()
-        if not line.startswith("- Finding"):
-            continue
-        parts = line.split(":", 1)
-        if len(parts) < 2:
-            continue
-        try:
-            num = int(parts[0].replace("- Finding", "").strip())
-        except ValueError:
-            continue
-        detail = parts[1].strip()
-        img_match = re.search(r"\(Image\s+(\d+)\)", detail)
-        diam_match = re.search(r"([\d.]+\s*mm)", detail, re.IGNORECASE)
-        result[num] = {
-            "diameter": diam_match.group(1) if diam_match else "N/A",
-            "image_number": int(img_match.group(1)) if img_match else None,
-        }
+def build_accession_to_uid_map() -> dict[str, str]:
+    """Build {accession_number: ct_series_uid} from registry info text."""
+    result: dict[str, str] = {}
+    for ct_uid, meta in seg_registry.list_entries().items():
+        info = meta.get("info", "")
+        for line in info.splitlines():
+            line = line.strip()
+            if line.startswith("Accession Number:"):
+                acc = line.split(":", 1)[1].strip()
+                if acc and acc != "0000":
+                    result[acc] = ct_uid
+                break
     return result
 
 
 # ---------------------------------------------------------------------------
-# CT index building
+# Parsing helpers (conservé pour référence — remplacé par findings_validation.json)
 # ---------------------------------------------------------------------------
 
+# def parse_findings(info_text: str | None) -> dict[int, dict]:
+#     """Parse all Finding lines from the registry info text.
+#     Returns {seg_num: {"diameter": "17mm", "image_number": 39 or None}}.
+#     """
+#     result: dict[int, dict] = {}
+#     if not info_text:
+#         return result
+#     for line in info_text.splitlines():
+#         line = line.strip()
+#         if not line.startswith("- Finding"):
+#             continue
+#         parts = line.split(":", 1)
+#         if len(parts) < 2:
+#             continue
+#         try:
+#             num = int(parts[0].replace("- Finding", "").strip())
+#         except ValueError:
+#             continue
+#         detail = parts[1].strip()
+#         img_match = re.search(r"\(Image\s+(\d+)\)", detail)
+#         diam_match = re.search(r"([\d.]+\s*mm)", detail, re.IGNORECASE)
+#         result[num] = {
+#             "diameter": diam_match.group(1) if diam_match else "N/A",
+#             "image_number": int(img_match.group(1)) if img_match else None,
+#         }
+#     return result
 
-def build_ct_index(ct_series_id: str) -> tuple[dict[str, str], dict[int, str]]:
-    """Index CT instances from an Orthanc series.
+
+# ---------------------------------------------------------------------------
+# CT index building — local filesystem (remplace build_ct_index Orthanc)
+# ---------------------------------------------------------------------------
+
+# Ancienne version Orthanc (conservée en commentaire) :
+# def build_ct_index(ct_series_id: str) -> tuple[dict[str, str], dict[int, str]]:
+#     uid_to_orthanc: dict[str, str] = {}
+#     instnum_to_uid: dict[int, str] = {}
+#     instances = get_series_instances(ct_series_id)
+#     for inst in instances:
+#         tags = get_instance_tags(inst["ID"])
+#         sop_uid = tags.get("SOPInstanceUID", "")
+#         if not sop_uid:
+#             continue
+#         uid_to_orthanc[sop_uid] = inst["ID"]
+#         inst_num_str = tags.get("InstanceNumber", "")
+#         if inst_num_str:
+#             try:
+#                 instnum_to_uid[int(inst_num_str)] = sop_uid
+#             except ValueError:
+#                 pass
+#     return uid_to_orthanc, instnum_to_uid
+
+
+def build_local_ct_index(
+    ct_series_uid: str,
+    patient_id: str,
+    dataset_dir: Path,
+) -> tuple[dict[str, Path], dict[int, str]]:
+    """Index CT slices from the local dataset directory.
+
+    Searches under the patient's folder for DCM files belonging to ct_series_uid.
 
     Returns:
-        uid_to_orthanc: SOPInstanceUID → Orthanc instance ID
+        uid_to_path: SOPInstanceUID → filepath
         instnum_to_uid: InstanceNumber (int) → SOPInstanceUID
     """
-    uid_to_orthanc: dict[str, str] = {}
+    uid_to_path: dict[str, Path] = {}
     instnum_to_uid: dict[int, str] = {}
 
-    instances = get_series_instances(ct_series_id)
-    for inst in instances:
-        tags = get_instance_tags(inst["ID"])
-        sop_uid = tags.get("SOPInstanceUID", "")
-        if not sop_uid:
-            continue
-        uid_to_orthanc[sop_uid] = inst["ID"]
-        inst_num_str = tags.get("InstanceNumber", "")
-        if inst_num_str:
-            try:
-                instnum_to_uid[int(inst_num_str)] = sop_uid
-            except ValueError:
-                pass
+    patient_dirs = list(dataset_dir.glob(f"*{patient_id}*"))
+    if not patient_dirs:
+        print(f"  [WARN] No patient folder found for {patient_id}")
+        return uid_to_path, instnum_to_uid
 
-    return uid_to_orthanc, instnum_to_uid
+    for patient_dir in patient_dirs:
+        for dcm_path in patient_dir.rglob("*.dcm"):
+            try:
+                ds = pydicom.dcmread(str(dcm_path), stop_before_pixels=True)
+            except Exception:
+                continue
+            if getattr(ds, "SeriesInstanceUID", None) != ct_series_uid:
+                continue
+            sop_uid = str(getattr(ds, "SOPInstanceUID", "") or "")
+            if not sop_uid:
+                continue
+            uid_to_path[sop_uid] = dcm_path
+            inst_num_str = getattr(ds, "InstanceNumber", None)
+            if inst_num_str is not None:
+                try:
+                    instnum_to_uid[int(inst_num_str)] = sop_uid
+                except (ValueError, TypeError):
+                    pass
+
+    return uid_to_path, instnum_to_uid
 
 
 # ---------------------------------------------------------------------------
@@ -156,14 +200,28 @@ def build_ct_index(ct_series_id: str) -> tuple[dict[str, str], dict[int, str]]:
 def build_seg_index(
     seg_dcm: pydicom.Dataset,
 ) -> tuple[
-    dict[tuple[int, str], int],  # (seg_num, ref_sop_uid) → frame_idx
-    dict[int, list[tuple[int, int]]],  # seg_num → [(frame_idx, pixel_count)]
+    dict[tuple[int, str], int],  # (finding_num, ref_sop_uid) → frame_idx
+    dict[int, list[tuple[int, int]]],  # finding_num → [(frame_idx, pixel_count)]
     np.ndarray,  # pixel_array (n_frames, H, W)
 ]:
-    """Index SEG frames by (segment_number, referenced_CT_uid) and by area."""
+    """Index SEG frames by (finding_number, referenced_CT_uid) and by area.
+
+    finding_number is derived from the SegmentLabel (e.g. 'Finding.3' → 3),
+    falling back to the raw SegmentNumber if no label match is found.
+    """
     pixel_array = seg_dcm.pixel_array
     if pixel_array.ndim == 2:
         pixel_array = pixel_array[np.newaxis, ...]
+
+    # Build seg_num → finding_number from DICOM SegmentSequence labels
+    seg_num_to_finding: dict[int, int] = {}
+    if hasattr(seg_dcm, "SegmentSequence"):
+        for seg in seg_dcm.SegmentSequence:
+            desc = str(getattr(seg, "SegmentDescription", "") or getattr(seg, "SegmentLabel", ""))
+            match = re.search(r"Finding[.\s_]?(\d+)", desc, re.IGNORECASE)
+            seg_num_to_finding[int(seg.SegmentNumber)] = (
+                int(match.group(1)) if match else int(seg.SegmentNumber)
+            )
 
     seg_frame_by_key: dict[tuple[int, str], int] = {}
     areas_by_seg: dict[int, list[tuple[int, int]]] = {}
@@ -171,6 +229,7 @@ def build_seg_index(
 
     for i, frame in enumerate(frames):
         seg_num = int(frame.SegmentIdentificationSequence[0].ReferencedSegmentNumber)
+        finding_num = seg_num_to_finding.get(seg_num, seg_num)
         area = int(pixel_array[i].sum())
 
         ref_uid: str | None = None
@@ -182,8 +241,8 @@ def build_seg_index(
                 pass
 
         if ref_uid:
-            seg_frame_by_key[(seg_num, ref_uid)] = i
-        areas_by_seg.setdefault(seg_num, []).append((i, area))
+            seg_frame_by_key[(finding_num, ref_uid)] = i
+        areas_by_seg.setdefault(finding_num, []).append((i, area))
 
     return seg_frame_by_key, areas_by_seg, pixel_array
 
@@ -225,98 +284,89 @@ def save_overlay(
 
 
 # ---------------------------------------------------------------------------
-# Per-series processing
+# Per-accession processing (piloté par findings_validation.json)
 # ---------------------------------------------------------------------------
 
+# Ancienne version (Orthanc + registre info text) conservée en commentaire :
+# def process_entry(ct_series_uid, seg_path, info_text, output_dir):
+#     orthanc_ids = find_series_by_uid(ct_series_uid)
+#     if not orthanc_ids: ...
+#     uid_to_orthanc, instnum_to_uid = build_ct_index(ct_series_id)
+#     findings = parse_findings(info_text)
+#     for seg_num, finding in sorted(findings.items()):
+#         ct_dcm = download_ct_slice(ct_orthanc_id)
+#         ...
 
-def process_entry(
+
+def process_accession(
+    entry: dict,
     ct_series_uid: str,
     seg_path: Path,
-    info_text: str | None,
     output_dir: Path,
+    dataset_dir: Path,
 ) -> None:
-    # Find CT series in Orthanc
-    orthanc_ids = find_series_by_uid(ct_series_uid)
-    if not orthanc_ids:
-        print(f"  [SKIP] CT series ...{ct_series_uid[-16:]} not found in Orthanc")
-        return
-    ct_series_id = orthanc_ids[0]
+    patient_id = entry["patient_id"]
+    accession = entry["accession_number"]
+    ok_findings = entry.get("ok_findings", [])
 
-    # Patient ID from SEG file (fastest: no extra Orthanc call)
-    ds_header = pydicom.dcmread(str(seg_path), stop_before_pixels=True)
-    patient_id = str(getattr(ds_header, "PatientID", ct_series_uid[-8:]))
-    accession_number = (
-        str(getattr(ds_header, "AccessionNumber", "NOACC")).strip() or "NOACC"
-    )
-
-    print(f"  Patient {patient_id} | CT series: {ct_series_id[:8]}")
-
-    # Parse findings
-    findings = parse_findings(info_text)
-    if not findings:
-        print("  [SKIP] No findings parsed from info text")
+    if not ok_findings:
+        print(f"  [SKIP] No ok_findings for {accession}")
         return
 
-    # Load SEG pixel data and build index
+    print(f"  Patient {patient_id} | Accession {accession} | {len(ok_findings)} finding(s)")
+
+    # Build CT index from local files
+    print("  Indexing CT slices from local dataset...")
+    uid_to_path, instnum_to_uid = build_local_ct_index(ct_series_uid, patient_id, dataset_dir)
+    if not uid_to_path:
+        print(f"  [SKIP] No CT slices found for series UID ...{ct_series_uid[-16:]}")
+        return
+    print(f"  CT index: {len(uid_to_path)} slices")
+
+    # Load SEG and build index
     seg_dcm = pydicom.dcmread(str(seg_path))
     seg_frame_by_key, areas_by_seg, pixel_array = build_seg_index(seg_dcm)
 
-    # Build CT index
-    print("  Indexing CT instances...")
-    uid_to_orthanc, instnum_to_uid = build_ct_index(ct_series_id)
-    print(f"  CT index: {len(uid_to_orthanc)} instances")
+    for finding in ok_findings:
+        seg_num = finding["finding_number"]
+        description = finding.get("description", "")
 
-    for seg_num, finding in sorted(findings.items()):
-        diameter = finding["diameter"]
-        image_number = finding["image_number"]
-
-        target_ct_uid: str | None = None
-        frame_idx: int | None = None
-
-        # Strategy 1: explicit image number from info text
-        if image_number is not None:
-            target_ct_uid = instnum_to_uid.get(image_number)
-            if target_ct_uid is None:
-                print(
-                    f"  [WARN] Finding{seg_num}: Image {image_number} not in CT index, falling back to max-area"
-                )
-            else:
-                frame_idx = seg_frame_by_key.get((seg_num, target_ct_uid))
-
-        # Strategy 2: SEG frame with the largest mask (max diameter cross-section)
-        if target_ct_uid is None:
-            seg_frames = areas_by_seg.get(seg_num, [])
-            if not seg_frames:
-                print(f"  [SKIP] Finding{seg_num}: no SEG frames found")
-                continue
-            best_frame_idx, best_area = max(seg_frames, key=lambda x: x[1])
-            frame_idx = best_frame_idx
-            frame_obj = seg_dcm.PerFrameFunctionalGroupsSequence[best_frame_idx]
-            try:
-                src = frame_obj.DerivationImageSequence[0].SourceImageSequence[0]
-                target_ct_uid = str(src.ReferencedSOPInstanceUID)
-            except (IndexError, AttributeError):
-                print(f"  [SKIP] Finding{seg_num}: could not read referenced CT UID")
-                continue
-
-        ct_orthanc_id = uid_to_orthanc.get(target_ct_uid)
-        if ct_orthanc_id is None:
-            print(f"  [SKIP] Finding{seg_num}: CT instance not in Orthanc")
+        # Toujours utiliser la frame SEG dont l'aire est maximale
+        # (= coupe au diamètre le plus grand).
+        seg_frames = areas_by_seg.get(seg_num, [])
+        if not seg_frames:
+            print(f"  [SKIP] Finding{seg_num}: no SEG frames found")
+            continue
+        best_frame_idx, best_area = max(seg_frames, key=lambda x: x[1])
+        if best_area == 0:
+            print(f"  [SKIP] Finding{seg_num}: all SEG frames are empty")
             continue
 
-        # Download CT slice and render
-        ct_dcm = download_ct_slice(ct_orthanc_id)
-        ct_norm = normalize_ct(ct_dcm)
-        seg_mask = pixel_array[frame_idx] if frame_idx is not None else None
+        frame_obj = seg_dcm.PerFrameFunctionalGroupsSequence[best_frame_idx]
+        try:
+            src = frame_obj.DerivationImageSequence[0].SourceImageSequence[0]
+            target_ct_uid = str(src.ReferencedSOPInstanceUID)
+        except (IndexError, AttributeError):
+            print(f"  [SKIP] Finding{seg_num}: could not read referenced CT UID")
+            continue
 
-        safe_diam = diameter.replace(" ", "").replace("/", "-")
+        ct_path = uid_to_path.get(target_ct_uid)
+        if ct_path is None:
+            print(f"  [SKIP] Finding{seg_num}: CT slice not found locally")
+            continue
+
+        ct_dcm = pydicom.dcmread(str(ct_path))
+        actual_image_number = int(getattr(ct_dcm, "InstanceNumber", 0))
+        ct_norm = normalize_ct(ct_dcm)
+        seg_mask = pixel_array[best_frame_idx]
+
+        safe_desc = re.sub(r"[^\w\-]", "_", description)[:50].strip("_")
         out_path = (
             output_dir
             / patient_id
-            / f"{accession_number}_finding{seg_num}_{safe_diam}.png"
+            / f"{accession}_finding{seg_num}_{safe_desc}.png"
         )
-        title = f"Patient {patient_id} | Acc {accession_number} | Finding {seg_num} | Ø {diameter}"
-        save_overlay(ct_norm, seg_mask, out_path, title=title)
+        save_overlay(ct_norm, seg_mask, out_path)
 
 
 # ---------------------------------------------------------------------------
@@ -340,40 +390,81 @@ def main() -> None:
         metavar="ACC",
         help="Process only this accession number (skip others).",
     )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default=None,
+        metavar="DIR",
+        help=f"Path to local DICOM dataset (défaut: {DATASET_DIR})",
+    )
     args = parser.parse_args()
 
+    dataset_dir = Path(args.dataset) if args.dataset else DATASET_DIR
     output_dir = Path(args.output)
     accession_filter = (args.accession or "").strip() or None
 
-    try:
-        _get("/system")
-        print(f"Connected to Orthanc: {ORTHANC_URL}")
-    except Exception as e:
-        print(f"Cannot reach Orthanc: {e}")
+    if not dataset_dir.exists():
+        print(f"[ERROR] Dataset directory not found: {dataset_dir}")
         return
 
-    entries = seg_registry.list_entries()
-    print(f"{len(entries)} SEG(s) in registry\n")
+    # Ancienne vérification Orthanc (remplacée par lecture locale) :
+    # try:
+    #     _get("/system")
+    #     print(f"Connected to Orthanc: {ORTHANC_URL}")
+    # except Exception as e:
+    #     print(f"Cannot reach Orthanc: {e}")
+    #     return
+
+    # Load findings_validation.json — source principale des findings validés
+    findings: list[dict] = json.loads(FINDINGS_FILE.read_text())
+    validated = [
+        e for e in findings
+        if e.get("status") == "validated" and e.get("ok_findings")
+    ]
+    print(
+        f"{len(validated)} validated accession(s) with ok_findings "
+        f"(out of {len(findings)} total)\n"
+    )
+
+    # Build accession → ct_series_uid mapping from registry
+    acc_to_uid = build_accession_to_uid_map()
+    print(f"Registry: {len(acc_to_uid)} accession → UID mappings\n")
+
     if accession_filter:
         print(f"Filtering by accession: {accession_filter!r}\n")
 
-    for ct_series_uid in entries:
-        seg_path = seg_registry.lookup(ct_series_uid)
-        info_text = seg_registry.lookup_info(ct_series_uid)
+    # Ancienne boucle (sur le registre) :
+    # for ct_series_uid in entries:
+    #     seg_path = seg_registry.lookup(ct_series_uid)
+    #     info_text = seg_registry.lookup_info(ct_series_uid)
+    #     process_entry(ct_series_uid, Path(seg_path), info_text, output_dir)
 
-        if seg_path is None:
-            print(f"[WARN] SEG not found for UID ...{ct_series_uid[-16:]}")
+    for entry in validated:
+        accession = entry["accession_number"]
+        patient_id = entry["patient_id"]
+
+        if accession_filter and accession != accession_filter:
             continue
 
-        if accession_filter:
-            ds_header = pydicom.dcmread(str(seg_path), stop_before_pixels=True)
-            acc = str(getattr(ds_header, "AccessionNumber", "") or "").strip()
-            if acc != accession_filter:
-                continue
+        ct_series_uid = acc_to_uid.get(accession)
+        if ct_series_uid is None:
+            print(f"[SKIP] Accession {accession}: not in SEG registry")
+            continue
 
-        print(f"Processing: ...{ct_series_uid[-16:]}")
+        seg_path = seg_registry.lookup(ct_series_uid)
+        if seg_path is None:
+            print(f"[SKIP] Accession {accession}: SEG file not found in registry")
+            continue
+
+        print(f"Processing: Patient {patient_id} | Accession {accession}")
         try:
-            process_entry(ct_series_uid, Path(seg_path), info_text, output_dir)
+            process_accession(
+                entry,
+                ct_series_uid,
+                Path(seg_path),
+                output_dir,
+                dataset_dir,
+            )
         except Exception as e:
             print(f"  [ERROR] {e}")
 
