@@ -142,7 +142,6 @@ Return a structured summary in clear language. Include:
 - Referenced images per visit
 - Diagnosis/response trends as appropriate."""
 
-
 def build_final_report_prompt(
     patient_id: str,
     visits_text: str,

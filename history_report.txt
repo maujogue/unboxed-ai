@@ -1,0 +1,42 @@
+**PatientID: 136F50A1**
+**Date: 20230823**
+**Clinical information:** Reason for Study: ASSAY.
+
+**STUDY TECHNIQUE:**
+THORACIC, ABDOMINAL, AND PELVIC CT studies with intravenous contrast were performed according to the usual protocol. Comparison is made with the previous CT scan dated 20230808.
+
+**REPORT:**
+Regarding the previous CT scan (20230808), the following observations are made:
+
+- **Lymphadenopathies:**
+  No pathological-looking supraclavicular or axillary lymphadenopathies are identified.
+  Pathological-looking adenopathy in the anterior mediastinal prevascular location remains unchanged at **7 mm** (Figure 18).
+
+- **Mediastinum:**
+  No other relevant pathological abnormalities are observed, with persistent discrete **cardiomegaly**.
+
+- **Pulmonary Findings (M1):**
+  Bilateral pulmonary nodular involvement compatible with metastatic disease (M1), with the following quantitative monitoring of previously identified lesions:
+  - **(F1)** in the apical segment of the **left upper lobe (LUL)** measuring **19 mm** (previously 19 mm, image 11).
+  - **(F2)** in the apical segment of the **left lower lobe (LLL)** measuring **28 mm** (previously 29 mm, image 25).
+  - A **new lesion (F3)** is identified in the **left lower lobe (LLL)**, measuring **12 mm** (image [to be referenced]).
+
+  No pleural effusion is observed in the current study.
+
+- **Abdomen and Pelvis:**
+  Liver, pancreas, adrenals, and both kidneys remain unchanged, with no suspicious lesions.
+  Absence of visualization of the uterus and both adnexa, consistent with prior **hysterectomy + double adnexectomy + probable omentectomy**.
+  No pathologically sized infradiaphragmatic lymphadenopathies are identified per RECIST criteria.
+  No free intra-abdominal fluid is observed.
+
+- **Musculoskeletal:**
+  No evidence of bone lesions suspicious for metastatic disease.
+
+**CONCLUSIONS:**
+Findings compatible with **progressive disease (PD)** according to RECIST 1.1 criteria, based on the **appearance of a new measurable lesion (F3)** and **slight progression of F2** (28 mm vs. 29 mm, within measurement variability but trending toward growth).
+
+---
+**Notes:**
+- The segmentation algorithm detected **3 nodules**, with **F1 and F2** corresponding to previously documented lesions and **F3** representing a new finding.
+- The **anterior mediastinal adenopathy** remains stable.
+- **Image references** should be updated to reflect the current study’s slice locations for F1, F2, and F3.

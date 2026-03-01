@@ -6,3 +6,6 @@ downloads/
 results/
  
 nodules_export.json
+export_nodules
+export_nodules.py
+findings_validation.json
