@@ -159,20 +159,29 @@ def _get_study_date_from_dicom(patient_id: str, accession: str) -> str:
 
 def _get_study_date(patient_id: str, accession: str) -> str:
     """
-    Retrouve la date d'examen (DD/MM/YYYY) à partir du nom du dossier d'étude.
-    Structure : dataset/{patient}*/{YYYYMMDD_...}/{patient}/  {accession ...}/
-    Retourne la chaîne de l'accession en fallback si introuvable.
+    Retourne la date d'examen (DD/MM/YYYY) depuis findings_validation.json (study_date),
+    en fallback sur la structure du dossier DICOM local.
     """
+    # 1. Lire depuis findings_validation.json (portable, pas besoin du dataset local)
+    try:
+        findings = json.loads(FINDINGS_FILE.read_text())
+        for e in findings:
+            if e.get("patient_id") == patient_id and str(e.get("accession_number")) == str(accession):
+                d = e.get("study_date")
+                if d:
+                    return d
+    except Exception:
+        pass
+    # 2. Fallback : structure du dossier DICOM local
     for patient_dir in DATASET_DIR.glob(f"*{patient_id}*"):
         for acc_dir in patient_dir.rglob(f"{accession}*"):
             if not acc_dir.is_dir():
                 continue
-            # date_folder est 2 niveaux au-dessus du dossier accession
             date_folder = acc_dir.parent.parent.name
             if len(date_folder) >= 8 and date_folder[:8].isdigit():
                 d = date_folder[:8]  # YYYYMMDD
                 return f"{d[6:8]}/{d[4:6]}/{d[0:4]}"
-    return accession  # fallback
+    return accession  # fallback final
 
 
 # ---------------------------------------------------------------------------
