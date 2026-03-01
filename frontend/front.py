@@ -28,6 +28,7 @@ import pandas as pd
 import pydicom
 from dotenv import load_dotenv
 from mistralai import Mistral
+from pydantic import BaseModel
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
@@ -51,6 +52,28 @@ MISTRAL_MODEL = "mistral-large-latest"
 
 _mistral = Mistral(api_key=os.getenv("MISTRAL_API_KEY", ""))
 
+
+# ---------------------------------------------------------------------------
+# Structured output models
+# ---------------------------------------------------------------------------
+
+class LesionMeasurement(BaseModel):
+    date: str
+    diameter_mm: float
+    delta_mm: float | None = None      # calculé par Python
+    interpretation: str = ""           # fourni par le LLM
+
+class Lesion(BaseModel):
+    id: str                            # "F1", "F2", ...
+    localisation: str                  # estimée depuis x/y/z
+    relation_spatiale: str = ""        # position relative aux autres lésions (distance, direction)
+    measurements: list[LesionMeasurement]
+
+class EvolutionReport(BaseModel):
+    lesions: list[Lesion]
+    autres_observations: str = ""
+
+
 # Cache module-level pour contourner les problèmes de propagation des gr.State
 # depuis un générateur vers d'autres boutons (comportement connu de Gradio).
 _pipeline_cache: dict = {"patient_data": {}, "report_structure": "lungrad"}
@@ -59,6 +82,79 @@ _pipeline_cache: dict = {"patient_data": {}, "report_structure": "lungrad"}
 # ---------------------------------------------------------------------------
 # Helper — résolution de la date d'examen depuis l'arborescence locale
 # ---------------------------------------------------------------------------
+
+
+def estimate_lobe(x: float | None, y: float | None, z: float | None,
+                  z_thoracic_min: float = 0.0, z_ct_max: float = 1.0) -> str:
+    """Estime le lobe pulmonaire depuis les coordonnées DICOM (x, y, z en mm)."""
+    if x is None or z is None:
+        return ""
+    thorax_h = z_ct_max - z_thoracic_min
+    if thorax_h <= 0:
+        return ""
+    z_rel = (z - z_thoracic_min) / thorax_h  # 0 = bas, 1 = haut
+    side = "gauche" if x > 0 else "droit"
+    if side == "droit":
+        if z_rel > 0.65:
+            lobe = "lobe supérieur"
+        elif z_rel > 0.35:
+            lobe = "lobe moyen" if (y is not None and y < 0) else "lobe inférieur"
+        else:
+            lobe = "lobe inférieur"
+    else:
+        lobe = "lobe supérieur" if z_rel > 0.55 else "lobe inférieur"
+    return f"{lobe} {side}"
+
+
+def compute_spatial_relations(findings_by_num: dict[int, dict]) -> dict[int, str]:
+    """
+    Calcule la position relative de chaque lésion par rapport aux autres
+    depuis les coordonnées de centroïde (x, y, z). Retourne {finding_number: description}.
+    """
+    nums = [n for n, f in findings_by_num.items() if f.get("x") is not None]
+    if len(nums) < 2:
+        return {}
+
+    result: dict[int, str] = {}
+    for num in nums:
+        f = findings_by_num[num]
+        cx, cy, cz = f["x"], f["y"], f["z"]
+        others = []
+        for other_num in nums:
+            if other_num == num:
+                continue
+            o = findings_by_num[other_num]
+            dx = o["x"] - cx
+            dy = o["y"] - cy
+            dz = o["z"] - cz
+            dist = round((dx**2 + dy**2 + dz**2) ** 0.5)
+            # Direction dominante
+            dirs = []
+            if abs(dz) >= 10:
+                dirs.append("supérieur" if dz > 0 else "inférieur")
+            if abs(dx) >= 10:
+                dirs.append("médial" if (cx > 0 and dx < 0) or (cx < 0 and dx > 0) else "latéral")
+            direction = "/".join(dirs) if dirs else "adjacent"
+            others.append(f"F{other_num} à {dist} mm ({direction})")
+        result[num] = ", ".join(others)
+    return result
+
+
+def _get_study_date_from_dicom(patient_id: str, accession: str) -> str:
+    """Lit StudyDate depuis les métadonnées DICOM. Fallback sur la méthode par dossier."""
+    for patient_dir in DATASET_DIR.glob(f"*{patient_id}*"):
+        for acc_dir in patient_dir.rglob(f"{accession}*"):
+            if not acc_dir.is_dir():
+                continue
+            for dcm_file in acc_dir.rglob("*.dcm"):
+                try:
+                    ds = pydicom.dcmread(str(dcm_file), stop_before_pixels=True)
+                    raw = str(getattr(ds, "StudyDate", "") or getattr(ds, "AcquisitionDate", ""))
+                    if len(raw) == 8 and raw.isdigit():
+                        return f"{raw[6:8]}/{raw[4:6]}/{raw[:4]}"
+                except Exception:
+                    continue
+    return _get_study_date(patient_id, accession)
 
 
 def _get_study_date(patient_id: str, accession: str) -> str:
@@ -403,10 +499,18 @@ def agent_retrieve_patient_data(patient_id: str) -> dict:
         )
 
         # Mesures depuis nodules_export
-        nodule_measures = {
-            n["number"]: n
-            for n in nodules_by_acc.get(acc, {}).get("nodules", [])
+        nodule_entry = nodules_by_acc.get(acc, {})
+        nodule_measures = {n["number"]: n for n in nodule_entry.get("nodules", [])}
+        z_thoracic_min = float(nodule_entry.get("z_thoracic_min") or 0.0)
+        z_ct_max = float(nodule_entry.get("z_ct_max") or 0.0)
+
+        # Relations spatiales entre lésions pour cet accession
+        findings_coords = {
+            num: {"x": m.get("x"), "y": m.get("y"), "z": m.get("z")}
+            for num, m in nodule_measures.items()
+            if num in ok_nums
         }
+        spatial_relations = compute_spatial_relations(findings_coords)
 
         # Findings validés avec images + mesures
         validated = []
@@ -416,11 +520,17 @@ def agent_retrieve_patient_data(patient_id: str) -> dict:
                 (IMAGES_DIR / patient_id).glob(f"{acc}_finding{num}_*.png")
             )
             measure = nodule_measures.get(num, {})
+            lobe = estimate_lobe(
+                measure.get("x"), measure.get("y"), measure.get("z"),
+                z_thoracic_min, z_ct_max,
+            )
             validated.append({
                 "finding_number": num,
                 "description": f["description"],
                 "image_number": f.get("image_number"),
                 "diameter": measure.get("diameter", "N/A"),
+                "lobe": lobe,
+                "relation_spatiale": spatial_relations.get(num, ""),
                 "position": {
                     "x": measure.get("x"),
                     "y": measure.get("y"),
@@ -454,7 +564,7 @@ def agent_retrieve_patient_data(patient_id: str) -> dict:
 
         visits.append({
             "accession": acc,
-            "date": _get_study_date(patient_id, acc),
+            "date": _get_study_date_from_dicom(patient_id, acc),
             "status": entry.get("status"),
             "report_text": report_text,
             "validated_findings": validated,
@@ -540,59 +650,104 @@ def agent_synthesise_evolution(
     patient_id: str,
     visits: list[dict],
     report_structure: str,
-) -> str:
+) -> EvolutionReport:
     """
-    Génère une synthèse de l'évolution des lésions validées (rapport ✓ + SEG ✓).
-    Seules les visites avec des findings validés sont incluses dans le contexte.
+    Construit un EvolutionReport structuré :
+    - Lésions, localisation (Python), relations spatiales (Python), mesures + deltas (Python)
+    - Interprétations cliniques par mesure (LLM)
+    - Autres observations non nodulaires (LLM)
     """
     system = SYSTEM_LUNGRAD if report_structure == "lungrad" else SYSTEM_RECIST
 
     validated_visits = [v for v in visits if v["validated_findings"]]
     if not validated_visits:
-        return "_Aucune lésion validée pour ce patient._"
+        return EvolutionReport(lesions=[], autres_observations="Aucune lésion validée.")
 
-    context_lines: list[str] = []
+    # ── Construire les lésions depuis les données Python ─────────────────────
+    # On garde la localisation + relation_spatiale du dernier examen disponible
+    lesions_by_id: dict[str, Lesion] = {}
     for v in validated_visits:
-        label = v.get("date") or v["accession"]
-        findings_desc = "\n".join(
-            f"  • F{f['finding_number']} — {f['description']} "
-            f"(diamètre SEG : {f['diameter']}, image {f['image_number']})"
-            for f in v["validated_findings"]
-        )
-        # Inclure un extrait du rapport clinique pour contexte
-        report_excerpt = ""
-        if v.get("report_text"):
-            report_excerpt = f"\n  Extrait rapport : {str(v['report_text'])[:400]}…"
+        date = v.get("date") or v["accession"]
+        for f in v["validated_findings"]:
+            fid = f"F{f['finding_number']}"
+            m = re.search(r"([\d.]+)", f.get("diameter", ""))
+            diameter_mm = float(m.group(1)) if m else 0.0
+            if fid not in lesions_by_id:
+                lesions_by_id[fid] = Lesion(
+                    id=fid,
+                    localisation=f.get("lobe", ""),
+                    relation_spatiale=f.get("relation_spatiale", ""),
+                    measurements=[],
+                )
+            lesions_by_id[fid].measurements.append(
+                LesionMeasurement(date=date, diameter_mm=diameter_mm)
+            )
 
-        context_lines.append(
-            f"Examen du {label} :\n{findings_desc}{report_excerpt}"
-        )
+    # ── Calcul des deltas en Python ──────────────────────────────────────────
+    for lesion in lesions_by_id.values():
+        for i, meas in enumerate(lesion.measurements):
+            if i > 0:
+                meas.delta_mm = round(meas.diameter_mm - lesion.measurements[i - 1].diameter_mm, 1)
 
+    # ── Contexte pour le LLM (interprétations seulement) ────────────────────
+    context_lines = []
+    for fid, lesion in sorted(lesions_by_id.items()):
+        lines = [f"{fid} ({lesion.localisation}):"]
+        for meas in lesion.measurements:
+            delta_str = (
+                "" if meas.delta_mm is None
+                else f" ({'+' if meas.delta_mm >= 0 else ''}{meas.delta_mm} mm)"
+            )
+            lines.append(f"  - {meas.date} : {meas.diameter_mm:.1f} mm{delta_str}")
+        context_lines.append("\n".join(lines))
     context = "\n\n".join(context_lines)
 
-    prompt = f"""Voici les lésions pulmonaires confirmées (présentes dans le rapport ET dans la segmentation algorithmique) pour le patient {patient_id}, dans l'ordre chronologique :
+    # Extraits de rapports cliniques pour les autres observations
+    report_excerpts = "\n".join(
+        f"- {v.get('date') or v['accession']} : {str(v['report_text'])[:300]}"
+        for v in validated_visits if v.get("report_text")
+    )
+
+    prompt = f"""Patient {patient_id} — mesures de segmentation algorithmique (diamètres fiables) :
 
 {context}
 
-Rédige une synthèse médicale structurée de l'évolution de ces lésions :
-- Pour chaque lésion récurrente (F1, F2…), décris l'évolution entre les visites (diamètre, stabilité, progression, régression).
-- Signale l'apparition de nouvelles lésions ou la disparition d'anciennes.
-- Utilise le vocabulaire radiologique approprié en français.
-- Sois factuel, concis et directement utilisable par un radiologue.
-- Structure ta réponse en paragraphes clairs (une lésion = un paragraphe).
-- NE génère PAS d'en-tête de rapport ni de conclusion générale : uniquement l'analyse de l'évolution.
-- IMPÉRATIF : pour les diamètres, utilise UNIQUEMENT le diamètre issu de la segmentation algorithmique (champ "diamètre SEG"). N'utilise JAMAIS les diamètres mentionnés dans les extraits de rapport clinique. Ne compare pas les deux valeurs et ne les cite pas ensemble.
-- N'utilise JAMAIS d'astérisques (*) dans le texte généré, ni comme marqueur, ni comme note de bas de page, ni pour tout autre usage."""
+Extraits des rapports cliniques (pour identifier les observations non nodulaires uniquement) :
+{report_excerpts or "(aucun)"}
+
+Réponds UNIQUEMENT avec ce JSON :
+{{
+  "interpretations": {{
+    "F1": {{"<date>": "<interprétation courte selon {report_structure.upper()}, max 12 mots>"}},
+    "F2": {{...}}
+  }},
+  "autres_observations": "<findings non nodulaires : épanchement, adénopathies, etc. Vide si aucun.>"
+}}
+
+Règles :
+- N'utilise JAMAIS les diamètres des rapports cliniques — uniquement ceux fournis ci-dessus.
+- Interprétation en français, concise, vocabulaire radiologique.
+- N'utilise pas d'astérisques."""
 
     resp = _mistral.chat.complete(
         model=MISTRAL_MODEL,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": prompt},
-        ],
-        temperature=0.3,
+        messages=[{"role": "system", "content": system}, {"role": "user", "content": prompt}],
+        temperature=0.2,
+        response_format={"type": "json_object"},
     )
-    return resp.choices[0].message.content or ""
+
+    try:
+        parsed = json.loads(resp.choices[0].message.content or "{}")
+        interps = parsed.get("interpretations", {})
+        for fid, lesion in lesions_by_id.items():
+            fid_interps = interps.get(fid, {})
+            for meas in lesion.measurements:
+                meas.interpretation = fid_interps.get(meas.date, "")
+        autres = parsed.get("autres_observations", "")
+    except Exception:
+        autres = ""
+
+    return EvolutionReport(lesions=list(lesions_by_id.values()), autres_observations=autres)
 
 
 # ---------------------------------------------------------------------------
@@ -612,16 +767,167 @@ _TH = "padding:9px 14px;border:1px solid #d1d5db;text-align:left;font-weight:600
 _TD = "padding:8px 14px;border:1px solid #e5e7eb;vertical-align:top"
 
 
+def _build_timeline_chart(patient_data: dict) -> str:
+    """Génère un graphe matplotlib d'évolution des lésions; retourne une balise <img> base64 ou ''."""
+    import io as _io
+
+    visits = patient_data.get("visits", [])
+
+    # Séries par numéro de lésion : {num: [(date_str, diam_mm), ...]}
+    series: dict[int, list[tuple[str, float]]] = {}
+    for v in visits:
+        date_label = v.get("date") or v["accession"]
+        for f in v.get("validated_findings", []):
+            num = f["finding_number"]
+            m = re.search(r"([\d.]+)", f.get("diameter", ""))
+            if not m:
+                continue
+            series.setdefault(num, []).append((date_label, float(m.group(1))))
+
+    if not series:
+        return ""
+
+    # Toutes les dates uniques dans l'ordre chronologique (ordre des visites, déjà trié)
+    seen: set[str] = set()
+    all_dates: list[str] = []
+    for v in visits:
+        d = v.get("date") or v["accession"]
+        if d not in seen:
+            seen.add(d)
+            all_dates.append(d)
+    date_to_x = {d: i for i, d in enumerate(all_dates)}
+
+    def _fmt(d: str) -> str:
+        if len(d) == 8 and d.isdigit():
+            return f"{d[6:8]}/{d[4:6]}/{d[:4]}"
+        return d
+
+    fig, ax = plt.subplots(figsize=(9, 3.5))
+    fig.patch.set_facecolor("#f0f9ff")
+    ax.set_facecolor("#f0f9ff")
+
+    palette = ["#2563eb", "#16a34a", "#d97706", "#dc2626", "#7c3aed"]
+
+    for i, (num, points) in enumerate(sorted(series.items())):
+        color = palette[i % len(palette)]
+        xs = [date_to_x[p[0]] for p in points]
+        ys = [p[1] for p in points]
+        ax.plot(xs, ys, marker="o", color=color, linewidth=2.2,
+                markersize=8, zorder=3)
+        for x, y in zip(xs, ys):
+            ax.annotate(
+                f"{y:.1f} mm", (x, y),
+                textcoords="offset points", xytext=(0, 10),
+                ha="center", fontsize=9, color=color, fontweight="bold",
+            )
+        # Label de la courbe à la dernière valeur
+        if points:
+            last_x, last_y = date_to_x[points[-1][0]], points[-1][1]
+            ax.annotate(
+                f"F{num}", (last_x, last_y),
+                textcoords="offset points", xytext=(8, 0),
+                va="center", fontsize=10, color=color, fontweight="bold",
+            )
+
+    ax.set_xticks(range(len(all_dates)))
+    ax.set_xticklabels([_fmt(d) for d in all_dates], fontsize=9)
+    ax.set_ylabel("Diamètre (mm)", fontsize=10)
+    ax.set_title("Évolution temporelle des lésions (diamètre SEG)",
+                 fontsize=12, fontweight="bold", color="#1e3a5f", pad=10)
+    ax.grid(axis="y", linestyle="--", alpha=0.4, color="#93c5fd")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    if len(all_dates) > 1:
+        ax.set_xlim(-0.3, len(all_dates) - 0.7)
+
+    y_vals = [p[1] for pts in series.values() for p in pts]
+    margin = max((max(y_vals) - min(y_vals)) * 0.25, 5)
+    ax.set_ylim(max(0, min(y_vals) - margin), max(y_vals) + margin + 8)
+
+    plt.tight_layout()
+    buf = _io.BytesIO()
+    plt.savefig(buf, format="png", dpi=110, bbox_inches="tight")
+    plt.close(fig)
+    buf.seek(0)
+    b64 = base64.b64encode(buf.read()).decode()
+    return (
+        f'<img src="data:image/png;base64,{b64}" '
+        f'style="width:100%;max-width:860px;border-radius:8px;margin-top:4px">'
+    )
+
+
+_TH = "padding:9px 14px;border:1px solid #d1d5db;text-align:left;font-weight:600;background:#eff6ff;color:#1e3a5f"
+_TD = "padding:8px 14px;border:1px solid #e5e7eb;vertical-align:top;font-size:13px"
+_TD_DELTA_POS = _TD + ";color:#dc2626;font-weight:600"
+_TD_DELTA_NEG = _TD + ";color:#16a34a;font-weight:600"
+_TD_DELTA_NEU = _TD + ";color:#6b7280"
+
+
 def build_html_report(
     patient_data: dict,
     structure: str,
     structure_reasoning: str,
-    synthesis: str,
+    evolution: EvolutionReport,
 ) -> str:
     patient_id = patient_data["patient_id"]
     visits = list(reversed(patient_data["visits"]))  # plus récent en premier
 
-    # ── Section 1 : lésions validées par visite ──────────────────────────
+    # ── Section 1 : synthèse structurée par lésion ───────────────────────
+    lesion_blocks = ""
+    for lesion in evolution.lesions:
+        rows = ""
+        for meas in lesion.measurements:
+            if meas.delta_mm is None:
+                delta_cell = f'<td style="{_TD_DELTA_NEU}">—</td>'
+            elif meas.delta_mm > 0:
+                delta_cell = f'<td style="{_TD_DELTA_POS}">+{meas.delta_mm} mm</td>'
+            elif meas.delta_mm < 0:
+                delta_cell = f'<td style="{_TD_DELTA_NEG}">{meas.delta_mm} mm</td>'
+            else:
+                delta_cell = f'<td style="{_TD_DELTA_NEU}">stable</td>'
+            rows += f"""<tr>
+              <td style="{_TD}">{meas.date}</td>
+              <td style="{_TD};font-weight:600">{meas.diameter_mm:.1f} mm</td>
+              {delta_cell}
+              <td style="{_TD};color:#374151">{meas.interpretation}</td>
+            </tr>"""
+
+        relation_html = (
+            f'<p style="margin:4px 0 10px;font-size:12px;color:#6b7280">'
+            f'↔ {lesion.relation_spatiale}</p>'
+        ) if lesion.relation_spatiale else ""
+
+        lesion_blocks += f"""
+        <div style="margin-bottom:20px;border:1px solid #e0e7ff;border-radius:8px;overflow:hidden">
+          <div style="background:#eff6ff;padding:10px 16px;display:flex;align-items:baseline;gap:10px">
+            <strong style="font-size:15px;color:#1e3a5f">{lesion.id}</strong>
+            <span style="font-size:13px;color:#4b5563">{lesion.localisation}</span>
+          </div>
+          {relation_html and f'<div style="padding:0 16px">{relation_html}</div>'}
+          <table style="width:100%;border-collapse:collapse">
+            <thead><tr>
+              <th style="{_TH}">Date</th>
+              <th style="{_TH}">Diamètre SEG</th>
+              <th style="{_TH}">Évolution</th>
+              <th style="{_TH}">Interprétation</th>
+            </tr></thead>
+            <tbody>{rows}</tbody>
+          </table>
+        </div>"""
+
+    if not lesion_blocks:
+        lesion_blocks = "<p style='color:#9ca3af'>Aucune lésion validée.</p>"
+
+    autres_html = ""
+    if evolution.autres_observations:
+        autres_html = f"""
+      <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;
+                  padding:14px 18px;margin-bottom:24px">
+        <h3 style="margin:0 0 8px;color:#9a3412;font-size:15px">Autres observations</h3>
+        <p style="margin:0;font-size:14px;color:#1e293b">{evolution.autres_observations}</p>
+      </div>"""
+
+    # ── Section 2 : images des lésions validées par visite ───────────────
     validated_html_parts: list[str] = []
     for v in visits:
         if not v["validated_findings"]:
@@ -630,46 +936,30 @@ def build_html_report(
         cards = ""
         for f in v["validated_findings"]:
             img_tag = _b64_img(f["image_path"])
+            if not img_tag:
+                continue
             cards += f"""
             <div style="display:flex;gap:14px;align-items:flex-start;
                         margin:10px 0;padding:12px;background:#f9fafb;
                         border-radius:8px;border:1px solid #e5e7eb">
               {img_tag}
               <div style="flex:1;min-width:0">
-                <strong>F{f['finding_number']}</strong><br>
+                <strong>F{f['finding_number']}</strong>
+                <span style="font-size:12px;color:#6b7280;margin-left:8px">{f.get('lobe','')}</span><br>
                 <span style="font-size:13px;color:#6b7280">
                   Diamètre SEG : {f['diameter']}
                   &nbsp;·&nbsp; Coupe : {f['image_number']}
                 </span>
               </div>
             </div>"""
+        if cards:
+            validated_html_parts.append(f"""
+            <div style="margin-bottom:20px">
+              <h4 style="color:#1e40af;margin:0 0 6px;font-size:15px">Examen du {label}</h4>
+              {cards}
+            </div>""")
 
-        validated_html_parts.append(f"""
-        <div style="margin-bottom:20px">
-          <h4 style="color:#1e40af;margin:0 0 6px;font-size:15px">
-            Examen du {label}
-          </h4>
-          {cards}
-        </div>""")
-
-    if validated_html_parts:
-        validated_html = "\n".join(validated_html_parts)
-    else:
-        validated_html = "<p style='color:#9ca3af'>Aucune lésion validée.</p>"
-
-    # ── Synthèse LLM : markdown → HTML basique ───────────────────────────
-    synthesis_html = (
-        synthesis
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace("\n\n", "</p><p style='margin:10px 0'>")
-        .replace("\n", "<br>")
-        .replace("**", "<strong>", 1)
-    )
-    # Gestion basique du bold **...**
-    synthesis_html = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", synthesis_html)
-    synthesis_html = re.sub(r"\*(.+?)\*", r"<em>\1</em>", synthesis_html)
+    validated_html = "\n".join(validated_html_parts) or ""
 
     structure_badge = (
         "<span style='background:#dbeafe;color:#1d4ed8;padding:2px 8px;"
@@ -679,35 +969,22 @@ def build_html_report(
     return f"""
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
                 color:#111827;line-height:1.6">
-
-      <!-- En-tête -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
         <h2 style="margin:0;color:#1e3a5f">Patient {patient_id}</h2>
         {structure_badge}
       </div>
-      <p style="margin:0 0 16px;font-size:13px;color:#6b7280">
-        Structure choisie par le LLM judge : {structure_reasoning}
+      <p style="margin:0 0 20px;font-size:13px;color:#6b7280">
+        Structure : {structure_reasoning}
       </p>
 
-      <!-- Synthèse LLM -->
-      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;
-                  padding:18px 20px;margin-bottom:24px">
-        <h3 style="margin:0 0 12px;color:#1d4ed8;font-size:16px">
-          🤖 Synthèse de l'évolution — analyse IA
-        </h3>
-        <div style="font-size:14px;color:#1e293b">
-          <p style='margin:10px 0'>{synthesis_html}</p>
-        </div>
-      </div>
-
-      <!-- Lésions validées avec images -->
-      <h3 style="color:#1e3a5f;border-bottom:1px solid #e5e7eb;
-                 padding-bottom:6px;margin-bottom:14px">
-        ✅ Lésions confirmées
+      <h3 style="color:#1e3a5f;border-bottom:1px solid #e5e7eb;padding-bottom:6px;margin-bottom:16px">
+        🔬 Évolution par lésion
       </h3>
-      {validated_html}
+      {lesion_blocks}
 
+      {autres_html}
 
+      {"<h3 style='color:#1e3a5f;border-bottom:1px solid #e5e7eb;padding-bottom:6px;margin-bottom:14px'>✅ Images des lésions confirmées</h3>" + validated_html if validated_html else ""}
     </div>"""
 
 
@@ -716,7 +993,7 @@ def build_html_report(
 # ---------------------------------------------------------------------------
 
 
-def _render_new_report_html(patient_id: str, visit_label: str, report_text: str) -> str:
+def _render_new_report_html(patient_id: str, visit_label: str, report_text: str, patient_data: dict | None = None) -> str:
     """Rendu HTML du rapport généré pour la visite la plus récente (style vert)."""
     report_html = (
         report_text
@@ -728,6 +1005,16 @@ def _render_new_report_html(patient_id: str, visit_label: str, report_text: str)
     )
     report_html = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", report_html)
     report_html = re.sub(r"\*(.+?)\*", r"<em>\1</em>", report_html)
+
+    timeline_img = _build_timeline_chart(patient_data) if patient_data else ""
+    timeline_section = f"""
+      <h3 style="color:#1e3a5f;border-bottom:1px solid #e5e7eb;
+                 padding-bottom:6px;margin-bottom:14px">
+        📈 Évolution temporelle des lésions
+      </h3>
+      <div>{timeline_img}</div>
+    """ if timeline_img else ""
+
     return f"""
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
                 color:#111827;line-height:1.6">
@@ -740,6 +1027,7 @@ def _render_new_report_html(patient_id: str, visit_label: str, report_text: str)
           <p style='margin:10px 0'>{report_html}</p>
         </div>
       </div>
+      {timeline_section}
     </div>"""
 
 
@@ -885,7 +1173,7 @@ Patient history reports:
         return gr.update(visible=True), f"❌ Erreur lors de la génération : {e}", ""
 
     visit_label = latest_visit.get("date") or latest_visit["accession"]
-    html = _render_new_report_html(patient_id, visit_label, report_text)
+    html = _render_new_report_html(patient_id, visit_label, report_text, patient_data)
     return gr.update(visible=True), "✅ Rapport généré.", html
 
 
@@ -991,7 +1279,7 @@ def run_pipeline(patient_id: str) -> Generator[tuple, None, None]:
     if n_validated == 0:
         yield (
             _step("Aucune lésion validée — synthèse impossible.", "ℹ️"),
-            build_html_report(patient_data, "lungrad", "Aucune visite validée.", ""),
+            build_html_report(patient_data, "lungrad", "Aucune visite validée.", EvolutionReport(lesions=[])),
             seg_rows, patient_id, patient_data, "lungrad",
             *_seg_outputs(seg_rows, patient_id),
         )
@@ -1016,7 +1304,7 @@ def run_pipeline(patient_id: str) -> Generator[tuple, None, None]:
     yield _step("Agent synthèse — génération de l'analyse d'évolution…"), "", [], patient_id, patient_data, structure, *_N
 
     try:
-        synthesis = agent_synthesise_evolution(patient_id, visits, structure)
+        evolution = agent_synthesise_evolution(patient_id, visits, structure)
     except Exception as e:
         yield _step(f"Erreur de la synthèse LLM : {e}", "❌"), "", [], patient_id, patient_data, structure, *_N
         return
@@ -1026,7 +1314,7 @@ def run_pipeline(patient_id: str) -> Generator[tuple, None, None]:
     # ── Étape 4 : rendu HTML ─────────────────────────────────────────────
     yield _step("Rendu du rapport…"), "", [], patient_id, patient_data, structure, *_N
 
-    html = build_html_report(patient_data, structure, reasoning, synthesis)
+    html = build_html_report(patient_data, structure, reasoning, evolution)
 
     yield (
         _step("Rapport prêt.", "✅"), html, seg_rows, patient_id, patient_data, structure,

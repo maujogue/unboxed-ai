@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { ReportCard } from './ReportCard'
 import { MarkdownContent } from './MarkdownContent'
 import { NoduleImagesList } from './NoduleImagesList'
+import { NoduleTimeline } from './NoduleTimeline'
 
 function formatDate(d) {
   if (!d || d === '-') return d
@@ -147,6 +148,7 @@ export function ExperienceCard({
           {reports.map((r) => (
             <ReportCard key={r.id} report={r} />
           ))}
+          <NoduleTimeline patientId={experience.patient ?? experience.patient_id} />
         </div>
       )}
     </div>

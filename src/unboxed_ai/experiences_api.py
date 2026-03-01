@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import logging
+import re
 import subprocess
 import sys
 from typing import Any
@@ -408,6 +410,61 @@ def save_report(req: SaveReportRequest) -> dict[str, Any]:
             "is_validated": row[5],
         }
     }
+
+
+@app.get("/api/nodule-timeline/{patient_id}")
+def get_nodule_timeline(patient_id: str) -> dict[str, Any]:
+    """Return temporal nodule evolution for a patient across all their studies."""
+    pid = (patient_id or "").strip()
+    if not pid:
+        raise HTTPException(status_code=400, detail="patient_id required")
+
+    root = Path(__file__).resolve().parent.parent.parent
+    seg_path = Path(Constants.SEGMENTATION_PATH)
+    if not seg_path.is_absolute():
+        seg_path = root / seg_path
+
+    if not seg_path.exists():
+        return {"patient_id": pid, "timeline": []}
+
+    with open(seg_path) as f:
+        all_nodules = json.load(f)
+
+    patient_entries = [e for e in all_nodules if str(e.get("patient_id", "")) == pid]
+    if not patient_entries:
+        return {"patient_id": pid, "timeline": []}
+
+    date_by_accession: dict[str, str] = {}
+    try:
+        client = _get_orthanc_client()
+        studies = client.list_studies(limit=None)
+        for s in studies:
+            acc = str(s.get("accession", "")).strip()
+            date = str(s.get("date", "")).strip()
+            if acc:
+                date_by_accession[acc] = date
+    except Exception:
+        pass
+
+    timeline = []
+    for entry in patient_entries:
+        accession = str(entry.get("accession_number", "")).strip()
+        date = date_by_accession.get(accession, "")
+        parsed_nodules = []
+        for n in entry.get("nodules", []):
+            diameter_str = n.get("diameter", "")
+            m = re.search(r"([\d.]+)", diameter_str)
+            diameter_mm = float(m.group(1)) if m else None
+            parsed_nodules.append({"number": n.get("number"), "diameter_mm": diameter_mm})
+        timeline.append({
+            "accession": accession,
+            "date": date,
+            "nodule_count": entry.get("nodule_count", 0),
+            "nodules": parsed_nodules,
+        })
+
+    timeline.sort(key=lambda x: x.get("date") or "")
+    return {"patient_id": pid, "timeline": timeline}
 
 
 def _setup_frontend_routes() -> None:
