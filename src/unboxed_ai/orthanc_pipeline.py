@@ -109,6 +109,8 @@ def extract_nodules(
     seg_path: Path, info_text: str | None
 ) -> tuple[list[Nodule], float]:
     """Parse a DICOM SEG file and return centroid + diameter for each nodule."""
+    import re
+
     ds = pydicom.dcmread(str(seg_path))
 
     # Parse diameters from info text
@@ -121,6 +123,17 @@ def extract_nodules(
                 if len(parts) == 2:
                     num = int(parts[0].replace("- Finding", "").strip())
                     diameters[num] = parts[1].strip()
+
+    # Build seg_num → finding_number from DICOM SegmentSequence labels
+    # (e.g. "Finding.3" → 3). Falls back to seg_num if no label found.
+    seg_num_to_finding: dict[int, int] = {}
+    if hasattr(ds, "SegmentSequence"):
+        for seg in ds.SegmentSequence:
+            desc = str(getattr(seg, "SegmentDescription", "") or getattr(seg, "SegmentLabel", ""))
+            match = re.search(r"Finding[.\s_]?(\d+)", desc, re.IGNORECASE)
+            seg_num_to_finding[int(seg.SegmentNumber)] = (
+                int(match.group(1)) if match else int(seg.SegmentNumber)
+            )
 
     if not hasattr(ds, "PerFrameFunctionalGroupsSequence"):
         return [], float("nan")
@@ -139,6 +152,7 @@ def extract_nodules(
 
     for i, frame in enumerate(frames):
         seg_num = int(frame.SegmentIdentificationSequence[0].ReferencedSegmentNumber)
+        finding_num = seg_num_to_finding.get(seg_num, seg_num)
         pos = [float(v) for v in frame.PlanePositionSequence[0].ImagePositionPatient]
         mask = pixel_array[i]
 
@@ -159,19 +173,19 @@ def extract_nodules(
                 origin + x * spacing[1] * row_dir + y * spacing[0] * col_dir
                 for x, y in zip(xs, ys)
             ]
-            seg_data.setdefault(seg_num, []).extend(coords)
+            seg_data.setdefault(finding_num, []).extend(coords)
 
-        seg_z.setdefault(seg_num, []).append(pos[2])
+        seg_z.setdefault(finding_num, []).append(pos[2])
 
     nodules = []
-    for seg_num in sorted(seg_data.keys()):
-        arr = np.array(seg_data[seg_num])
+    for finding_num in sorted(seg_data.keys()):
+        arr = np.array(seg_data[finding_num])
         centroid = arr.mean(axis=0)
-        z_vals = seg_z[seg_num]
+        z_vals = seg_z[finding_num]
         nodules.append(
             Nodule(
-                number=seg_num,
-                diameter=diameters.get(seg_num, "N/A"),
+                number=finding_num,
+                diameter=diameters.get(finding_num, "N/A"),
                 x=round(float(centroid[0]), 1),
                 y=round(float(centroid[1]), 1),
                 z=round(float(centroid[2]), 1),

@@ -435,49 +435,6 @@
     ]
   },
   {
-    "patient_id": "17A76C2A",
-    "accession_number": "98426752",
-    "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-1170962054851383.dcm",
-    "ct_series_uid": "1.2.840.113654.2.70.1.146588603417193456228411170962054851383",
-    "study_description": "TC TÒRAX",
-    "scan_type": "thorax-seul",
-    "z_ct_max": 19.5,
-    "z_thoracic_min": null,
-    "nodule_count": 3,
-    "nodules": [
-      {
-        "number": 1,
-        "diameter": "diameter 2.5mm",
-        "x": -90.0,
-        "y": 0.3,
-        "z": -37.5,
-        "z_min": -39.2,
-        "z_max": -36.8,
-        "is_thoracic": true
-      },
-      {
-        "number": 2,
-        "diameter": "diameter 7.3mm",
-        "x": -70.6,
-        "y": -72.2,
-        "z": -122.0,
-        "z_min": -124.2,
-        "z_max": -120.5,
-        "is_thoracic": true
-      },
-      {
-        "number": 3,
-        "diameter": "diameter 7.1mm",
-        "x": -100.8,
-        "y": 53.8,
-        "z": -134.9,
-        "z_min": -136.8,
-        "z_max": -133.0,
-        "is_thoracic": true
-      }
-    ]
-  },
-  {
     "patient_id": "0301B7D6",
     "accession_number": "11297707",
     "seg_file": "/Users/mathisaujogue/code/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-0676620742772698.dcm",
@@ -665,6 +622,49 @@
         "z": -146.3,
         "z_min": -151.2,
         "z_max": -146.2,
+        "is_thoracic": true
+      }
+    ]
+  },
+  {
+    "patient_id": "17A76C2A",
+    "accession_number": "98426752",
+    "seg_file": "/home/corentin/unboxed-ai/.venv/lib/python3.13/site-packages/dcm_seg_nodules/data/seg-1170962054851383.dcm",
+    "ct_series_uid": "1.2.840.113654.2.70.1.146588603417193456228411170962054851383",
+    "study_description": "TC TÒRAX",
+    "scan_type": "thorax-seul",
+    "z_ct_max": 19.5,
+    "z_thoracic_min": null,
+    "nodule_count": 3,
+    "nodules": [
+      {
+        "number": 2,
+        "diameter": "diameter 2.5mm",
+        "x": -90.0,
+        "y": 0.3,
+        "z": -37.5,
+        "z_min": -39.2,
+        "z_max": -36.8,
+        "is_thoracic": true
+      },
+      {
+        "number": 3,
+        "diameter": "diameter 7.3mm",
+        "x": -70.6,
+        "y": -72.2,
+        "z": -122.0,
+        "z_min": -124.2,
+        "z_max": -120.5,
+        "is_thoracic": true
+      },
+      {
+        "number": 4,
+        "diameter": "diameter 7.1mm",
+        "x": -100.8,
+        "y": 53.8,
+        "z": -134.9,
+        "z_min": -136.8,
+        "z_max": -133.0,
         "is_thoracic": true
       }
     ]
