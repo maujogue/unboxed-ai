@@ -162,12 +162,7 @@ def _get_or_create_seg_image(
         seg_mask = pixel_array[best_frame_idx]
 
         out_path = out_dir / f"{accession}_seg{seg_num}_unlabeled.png"
-        save_overlay(
-            ct_norm,
-            seg_mask,
-            out_path,
-            title=f"Segment {seg_num} | Acc {accession} | Coupes {image_numbers}",
-        )
+        save_overlay(ct_norm, seg_mask, out_path)
         return str(out_path)
     except Exception as e:
         print(f"[WARN] Could not generate seg image for seg{seg_num}: {e}")
